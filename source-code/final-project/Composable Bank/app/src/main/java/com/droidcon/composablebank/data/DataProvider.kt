@@ -407,7 +407,6 @@ object DataProvider {
             commonUse = "Adaptive designs, multi-platform compatibility.",
             properties = listOf(
                 "windowSizeClass: WindowSizeClass",
-                "content: @Composable () -> Unit"
             ),
             demo = { navController: NavController, name: String -> WindowSizeClass(navController, name) }
         ),
@@ -417,8 +416,12 @@ object DataProvider {
             category = "Adaptive UI",
             commonUse = "Adaptation to different orientations and screen sizes.",
             properties = listOf(
-                "configuration: Configuration",
-                "content: @Composable () -> Unit"
+                "LocalConfiguration.current",
+                "configuration.screenWidthDp.dp",
+                "configuration.screenHeightDp.dp",
+                "configuration.touchscreen",
+                "configuration.keyboard",
+                "configuration.navigation"
             ),
             demo = { navController: NavController, name: String -> LocalConfiguration(navController, name) }
         )

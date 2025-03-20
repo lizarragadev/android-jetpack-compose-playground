@@ -1,6 +1,9 @@
 package com.droidcon.composablebank.ui.adaptive_ui
 
-import androidx.compose.foundation.layout.Box
+import android.annotation.SuppressLint
+import android.app.Activity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -12,36 +15,144 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.windowsizeclass.*
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.DesktopWindows
+import androidx.compose.material.icons.filled.TabletAndroid
+import androidx.compose.ui.platform.LocalContext
 import com.droidcon.composablebank.utils.CustomTopAppBar
 
 @Composable
 fun WindowSizeClass(navController: NavController, name: String) {
-    Scaffold(
-        topBar = {
-            CustomTopAppBar(
-                title = name,
-                navController = navController
-            )
-        },
-        content = { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "$name Example",
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
+    val windowSizeClass = calculateWindowSizeClass()
+
+    MaterialTheme(
+        colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme(),
+        content = {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = {
+                    CustomTopAppBar(title = name, navController = navController)
+                },
+                content = { paddingValues ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        when (windowSizeClass.widthSizeClass) {
+                            WindowWidthSizeClass.Compact -> CompactLayout()
+                            WindowWidthSizeClass.Medium -> MediumLayout()
+                            WindowWidthSizeClass.Expanded -> ExpandedLayout()
+                        }
+                    }
                 }
-            }
+            )
         }
     )
+}
+
+@SuppressLint("ContextCastToActivity")
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@Composable
+private fun calculateWindowSizeClass(): WindowSizeClass {
+    val activity = LocalContext.current as Activity
+    return calculateWindowSizeClass(activity)
+}
+
+@Composable
+private fun CompactLayout() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Red.copy(alpha = 0.5f))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Compact Layout",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.White
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Suitable for small phones.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.White
+        )
+    }
+}
+
+@Composable
+private fun MediumLayout() {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Green.copy(alpha = 0.5f))
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Medium Layout",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Suitable for tablets or medium devices.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.TabletAndroid,
+            contentDescription = "Tablet",
+            tint = Color.White,
+            modifier = Modifier.size(100.dp)
+        )
+    }
+}
+
+@Composable
+private fun ExpandedLayout() {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Blue.copy(alpha = 0.5f))
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Default.DesktopWindows,
+            contentDescription = "Desktop",
+            tint = Color.White,
+            modifier = Modifier.size(150.dp)
+        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Expanded Layout",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Suitable for large screens such as desktops.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
+            )
+        }
+    }
 }
