@@ -38,194 +38,274 @@ import com.droidcon.composablebank.R
 fun ConstraintLayout(navController: NavController, name: String) {
     var showSnackbar by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
-
-    var alignmentName by remember { mutableStateOf("center") }
+    var alignmentName by remember { mutableStateOf("Center") }
     var showImage by remember { mutableStateOf(true) }
     var showButton by remember { mutableStateOf(true) }
-    var boxColor by remember { mutableStateOf(Color.Transparent) }
+    var boxColor by remember { mutableStateOf(Color.Cyan) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { CustomTopAppBar(title = name, navController = navController) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp)
-                ) {
-                    InteractiveRadioButtonGroup(
-                        options = listOf("topstart", "topcenter", "topend", "centerstart", "center", "centerend", "bottomstart", "bottomcenter", "bottomend"),
-                        selectedOption = alignmentName,
-                        onOptionSelected = { alignmentName = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveSwitch(
-                        label = "Show Image",
-                        checked = showImage,
-                        onCheckedChange = { showImage = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveSwitch(
-                        label = "Show Button",
-                        checked = showButton,
-                        onCheckedChange = { showButton = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveColorPicker(
-                        label = "Container Color",
-                        selectedColor = boxColor,
-                        onColorSelected = { boxColor = it }
-                    )
-                }
-
-                ConstraintLayout(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(400.dp)
-                        .background(boxColor)
-                        .padding(16.dp),
-                    constraintSet = ConstraintSet {
-                        val box1 = createRefFor("box1")
-                        val image = createRefFor("image")
-                        val button = createRefFor("button")
-
-                        when (alignmentName) {
-                            "topstart" -> {
-                                constrain(box1) {
-                                    top.linkTo(parent.top)
-                                    start.linkTo(parent.start)
-                                    width = Dimension.value(80.dp)
-                                    height = Dimension.value(80.dp)
-                                }
-                            }
-                            "topcenter" -> {
-                                constrain(box1) {
-                                    top.linkTo(parent.top)
-                                    centerHorizontallyTo(parent)
-                                    width = Dimension.value(80.dp)
-                                    height = Dimension.value(80.dp)
-                                }
-                            }
-                            "topend" -> {
-                                constrain(box1) {
-                                    top.linkTo(parent.top)
-                                    end.linkTo(parent.end)
-                                    width = Dimension.value(80.dp)
-                                    height = Dimension.value(80.dp)
-                                }
-                            }
-                            "centerstart" -> {
-                                constrain(box1) {
-                                    start.linkTo(parent.start)
-                                    centerVerticallyTo(parent)
-                                    width = Dimension.value(80.dp)
-                                    height = Dimension.value(80.dp)
-                                }
-                            }
-                            "center" -> {
-                                constrain(box1) {
-                                    centerTo(parent)
-                                    width = Dimension.value(80.dp)
-                                    height = Dimension.value(80.dp)
-                                }
-                            }
-                            "centerend" -> {
-                                constrain(box1) {
-                                    end.linkTo(parent.end)
-                                    centerVerticallyTo(parent)
-                                    width = Dimension.value(80.dp)
-                                    height = Dimension.value(80.dp)
-                                }
-                            }
-                            "bottomstart" -> {
-                                constrain(box1) {
-                                    bottom.linkTo(parent.bottom)
-                                    start.linkTo(parent.start)
-                                    width = Dimension.value(80.dp)
-                                    height = Dimension.value(80.dp)
-                                }
-                            }
-                            "bottomcenter" -> {
-                                constrain(box1) {
-                                    bottom.linkTo(parent.bottom)
-                                    centerHorizontallyTo(parent)
-                                    width = Dimension.value(80.dp)
-                                    height = Dimension.value(80.dp)
-                                }
-                            }
-                            "bottomend" -> {
-                                constrain(box1) {
-                                    bottom.linkTo(parent.bottom)
-                                    end.linkTo(parent.end)
-                                    width = Dimension.value(80.dp)
-                                    height = Dimension.value(80.dp)
-                                }
-                            }
-                        }
-
-                        if (showImage) {
-                            constrain(image) {
-                                top.linkTo(parent.top)
-                                start.linkTo(parent.start)
-                                width = Dimension.value(100.dp)
-                                height = Dimension.value(100.dp)
-                            }
-                        }
-
-                        if (showButton) {
-                            constrain(button) {
-                                bottom.linkTo(parent.bottom)
-                                end.linkTo(parent.end)
-                                width = Dimension.wrapContent
-                                height = Dimension.wrapContent
-                            }
-                        }
-                    }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .layoutId("box1")
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-
-                    if (showImage) {
-                        Image(
-                            painter = painterResource(R.drawable.droidcon),
-                            contentDescription = "Sample Image",
-                            modifier = Modifier
-                                .layoutId("image")
-                                .size(100.dp)
-                        )
-                    }
-
-                    if (showButton) {
-                        FloatingActionButton(
-                            onClick = { showSnackbar = true },
-                            modifier = Modifier
-                                .layoutId("button")
-                                .padding(16.dp)
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add")
-                        }
-                    }
-                }
-            }
+            MainContent(
+                paddingValues = paddingValues,
+                alignmentName = alignmentName,
+                showImage = showImage,
+                showButton = showButton,
+                boxColor = boxColor,
+                onAlignmentChange = { alignmentName = it },
+                onShowImageChange = { showImage = it },
+                onShowButtonChange = { showButton = it },
+                onBoxColorChange = { boxColor = it },
+                onShowSnackbar = { showSnackbar = true }
+            )
         }
     )
+    HandleSnackbar(showSnackbar, snackbarHostState) { showSnackbar = false }
+}
 
+@Composable
+private fun MainContent(
+    paddingValues: PaddingValues,
+    alignmentName: String,
+    showImage: Boolean,
+    showButton: Boolean,
+    boxColor: Color,
+    onAlignmentChange: (String) -> Unit,
+    onShowImageChange: (Boolean) -> Unit,
+    onShowButtonChange: (Boolean) -> Unit,
+    onBoxColorChange: (Color) -> Unit,
+    onShowSnackbar: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ConstraintConfigPanel(
+            alignmentName = alignmentName,
+            showImage = showImage,
+            showButton = showButton,
+            boxColor = boxColor,
+            onAlignmentChange = onAlignmentChange,
+            onShowImageChange = onShowImageChange,
+            onShowButtonChange = onShowButtonChange,
+            onBoxColorChange = onBoxColorChange
+        )
+
+        DemoConstraintLayout(
+            alignmentName = alignmentName,
+            showImage = showImage,
+            showButton = showButton,
+            boxColor = boxColor,
+            onButtonClick = onShowSnackbar
+        )
+    }
+}
+
+@Composable
+private fun ConstraintConfigPanel(
+    alignmentName: String,
+    showImage: Boolean,
+    showButton: Boolean,
+    boxColor: Color,
+    onAlignmentChange: (String) -> Unit,
+    onShowImageChange: (Boolean) -> Unit,
+    onShowButtonChange: (Boolean) -> Unit,
+    onBoxColorChange: (Color) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
+    ) {
+        InteractiveRadioButtonGroup(
+            options = listOf(
+                "TopStart", "TopCenter", "TopEnd",
+                "CenterStart", "Center", "CenterEnd",
+                "BottomStart", "BottomCenter", "BottomEnd"
+            ),
+            selectedOption = alignmentName,
+            onOptionSelected = onAlignmentChange
+        )
+
+        SwitchGroup(
+            showImage = showImage,
+            showButton = showButton,
+            onShowImageChange = onShowImageChange,
+            onShowButtonChange = onShowButtonChange
+        )
+
+        InteractiveColorPicker(
+            label = "Container Color",
+            selectedColor = boxColor,
+            onColorSelected = onBoxColorChange
+        )
+    }
+}
+
+@Composable
+private fun SwitchGroup(
+    showImage: Boolean,
+    showButton: Boolean,
+    onShowImageChange: (Boolean) -> Unit,
+    onShowButtonChange: (Boolean) -> Unit
+) {
+    Column {
+        InteractiveSwitch(
+            label = "Show Image",
+            checked = showImage,
+            onCheckedChange = onShowImageChange
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        InteractiveSwitch(
+            label = "Show Button",
+            checked = showButton,
+            onCheckedChange = onShowButtonChange
+        )
+    }
+}
+
+@Composable
+private fun DemoConstraintLayout(
+    alignmentName: String,
+    showImage: Boolean,
+    showButton: Boolean,
+    boxColor: Color,
+    onButtonClick: () -> Unit
+) {
+    ConstraintLayout(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)
+            .background(boxColor)
+            .padding(16.dp),
+        constraintSet = getConstraintSet(alignmentName, showImage, showButton)
+    ) {
+        LayoutComponents(
+            showImage = showImage,
+            showButton = showButton,
+            onButtonClick = onButtonClick
+        )
+    }
+}
+
+@Composable
+private fun LayoutComponents(
+    showImage: Boolean,
+    showButton: Boolean,
+    onButtonClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .layoutId("box1")
+            .size(80.dp)
+            .background(MaterialTheme.colorScheme.primary)
+    )
+
+    if (showImage) {
+        Image(
+            painter = painterResource(R.drawable.droidcon),
+            contentDescription = "Sample Image",
+            modifier = Modifier
+                .layoutId("image")
+                .size(100.dp)
+        )
+    }
+
+    if (showButton) {
+        FloatingActionButton(
+            onClick = onButtonClick,
+            modifier = Modifier.layoutId("button")
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add")
+        }
+    }
+}
+
+private fun getConstraintSet(
+    alignmentName: String,
+    showImage: Boolean,
+    showButton: Boolean
+): ConstraintSet = ConstraintSet {
+    val box1 = createRefFor("box1")
+    val image = createRefFor("image")
+    val button = createRefFor("button")
+
+    with(constrain(box1) {
+        width = Dimension.value(80.dp)
+        height = Dimension.value(80.dp)
+    }) {
+        when (alignmentName) {
+            "TopStart" -> {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+            }
+            "TopCenter" -> {
+                top.linkTo(parent.top)
+                centerHorizontallyTo(parent)
+            }
+            "TopEnd" -> {
+                top.linkTo(parent.top)
+                end.linkTo(parent.end)
+            }
+            "CenterStart" -> {
+                start.linkTo(parent.start)
+                centerVerticallyTo(parent)
+            }
+            "Center" -> centerTo(parent)
+            "CenterEnd" -> {
+                end.linkTo(parent.end)
+                centerVerticallyTo(parent)
+            }
+            "BottomStart" -> {
+                bottom.linkTo(parent.bottom)
+                start.linkTo(parent.start)
+            }
+            "BottomCenter" -> {
+                bottom.linkTo(parent.bottom)
+                centerHorizontallyTo(parent)
+            }
+            "BottomEnd" -> {
+                bottom.linkTo(parent.bottom)
+                end.linkTo(parent.end)
+            }
+        }
+    }
+
+    if (showImage) {
+        constrain(image) {
+            top.linkTo(parent.top)
+            start.linkTo(parent.start)
+            width = Dimension.value(100.dp)
+            height = Dimension.value(100.dp)
+        }
+    }
+
+    if (showButton) {
+        constrain(button) {
+            bottom.linkTo(parent.bottom)
+            end.linkTo(parent.end)
+            width = Dimension.wrapContent
+            height = Dimension.wrapContent
+        }
+    }
+}
+
+@Composable
+private fun HandleSnackbar(
+    showSnackbar: Boolean,
+    snackbarHostState: SnackbarHostState,
+    onDismiss: () -> Unit
+) {
     if (showSnackbar) {
         LaunchedEffect(snackbarHostState) {
             snackbarHostState.showSnackbar("ConstraintLayout updated")
-            showSnackbar = false
+            onDismiss()
         }
     }
 }

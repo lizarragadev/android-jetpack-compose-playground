@@ -30,11 +30,28 @@ fun AnimatedContent(navController: NavController, name: String) {
     var targetState by remember { mutableStateOf("State1") }
     var animationType by remember { mutableStateOf("Fade") }
 
+    AnimatedContentScaffold(
+        navController = navController,
+        screenName = name,
+        targetState = targetState,
+        animationType = animationType,
+        onStateChange = { targetState = it },
+        onAnimationTypeChange = { animationType = it }
+    )
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun AnimatedContentScaffold(
+    navController: NavController,
+    screenName: String,
+    targetState: String,
+    animationType: String,
+    onStateChange: (String) -> Unit,
+    onAnimationTypeChange: (String) -> Unit
+) {
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            CustomTopAppBar(title = name, navController = navController)
-        },
+        topBar = { CustomTopAppBar(title = screenName, navController = navController) },
         content = { paddingValues ->
             Column(
                 modifier = Modifier
@@ -43,44 +60,90 @@ fun AnimatedContent(navController: NavController, name: String) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(32.dp))
-                InteractiveRadioButtonGroup(
-                    options = listOf(
-                        "Fade",
-                        "Slide",
-                        "Scale",
-                        "Expand/Shrink",
-                        "Size Transform",
-                        "Custom Transition"
-                    ),
-                    selectedOption = animationType,
-                    onOptionSelected = { animationType = it }
+                AnimationSelectionSection(
+                    animationType = animationType,
+                    onTypeSelected = onAnimationTypeChange,
+                    currentState = targetState,
+                    onToggleState = onStateChange
                 )
-                Spacer(modifier = Modifier.height(24.dp))
 
-                Button(onClick = {
-                    targetState = if (targetState == "State1") "State2" else "State1"
-                }) {
-                    Text(text = "Toggle State")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    when (animationType) {
-                        "fade" -> FadeTransition(targetState)
-                        "slide" -> SlideTransition(targetState)
-                        "scale" -> ScaleTransition(targetState)
-                        "expand/shrink" -> ExpandShrinkTransition(targetState)
-                        "sizetransform" -> SizeTransformTransition(targetState)
-                        "customtransition" -> CustomTransition(targetState)
-                    }
-                }
+                AnimationPreviewSection(
+                    targetState = targetState,
+                    animationType = animationType
+                )
             }
         }
     )
+}
+
+@Composable
+private fun AnimationSelectionSection(
+    animationType: String,
+    onTypeSelected: (String) -> Unit,
+    currentState: String,
+    onToggleState: (String) -> Unit
+) {
+    Spacer(modifier = Modifier.height(32.dp))
+    AnimationTypeSelector(
+        selectedType = animationType,
+        onTypeSelected = onTypeSelected
+    )
+    Spacer(modifier = Modifier.height(24.dp))
+    ToggleStateButton(
+        currentState = currentState,
+        onToggle = onToggleState
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@Composable
+private fun AnimationTypeSelector(
+    selectedType: String,
+    onTypeSelected: (String) -> Unit
+) {
+    InteractiveRadioButtonGroup(
+        options = listOf(
+            "Fade",
+            "Slide",
+            "Scale",
+            "Expand/Shrink",
+            "Size Transform",
+            "Custom Transition"
+        ),
+        selectedOption = selectedType,
+        onOptionSelected = onTypeSelected
+    )
+}
+
+@Composable
+private fun ToggleStateButton(
+    currentState: String,
+    onToggle: (String) -> Unit
+) {
+    Button(onClick = { onToggle(if (currentState == "State1") "State2" else "State1") }) {
+        Text(text = "Toggle State")
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun AnimationPreviewSection(
+    targetState: String,
+    animationType: String
+) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        when (animationType) {
+            "Fade" -> FadeTransition(targetState)
+            "Slide" -> SlideTransition(targetState)
+            "Scale" -> ScaleTransition(targetState)
+            "Expand/Shrink" -> ExpandShrinkTransition(targetState)
+            "Size Transform" -> SizeTransformTransition(targetState)
+            "Custom Transition" -> CustomTransition(targetState)
+        }
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -89,7 +152,8 @@ private fun FadeTransition(targetState: String) {
     AnimatedContent(
         targetState = targetState,
         transitionSpec = {
-            fadeIn(animationSpec = tween(500)) togetherWith fadeOut(animationSpec = tween(500))
+            fadeIn(animationSpec = tween(1500)) togetherWith
+                    fadeOut(animationSpec = tween(1500))
         },
         label = "FadeTransition"
     ) { currentState ->
@@ -103,8 +167,8 @@ private fun SlideTransition(targetState: String) {
     AnimatedContent(
         targetState = targetState,
         transitionSpec = {
-            slideInHorizontally(animationSpec = tween(500)) { fullWidth -> -fullWidth } togetherWith
-                    slideOutHorizontally(animationSpec = tween(500)) { fullWidth -> fullWidth }
+            slideInHorizontally(animationSpec = tween(1500)) { -it } togetherWith
+                    slideOutHorizontally(animationSpec = tween(1500)) { it }
         },
         label = "SlideTransition"
     ) { currentState ->
@@ -118,8 +182,8 @@ private fun ScaleTransition(targetState: String) {
     AnimatedContent(
         targetState = targetState,
         transitionSpec = {
-            scaleIn(initialScale = 0.8f, animationSpec = tween(500)) togetherWith
-                    scaleOut(targetScale = 0.8f, animationSpec = tween(500))
+            scaleIn(initialScale = 0.8f, animationSpec = tween(1500)) togetherWith
+                    scaleOut(targetScale = 0.8f, animationSpec = tween(1500))
         },
         label = "ScaleTransition"
     ) { currentState ->
@@ -133,8 +197,14 @@ private fun ExpandShrinkTransition(targetState: String) {
     AnimatedContent(
         targetState = targetState,
         transitionSpec = {
-            expandIn(expandFrom = Alignment.Center, animationSpec = tween(500)) togetherWith
-                    shrinkOut(shrinkTowards = Alignment.Center, animationSpec = tween(500))
+            expandIn(
+                expandFrom = Alignment.Center,
+                animationSpec = tween(1500)
+            ) togetherWith
+                    shrinkOut(
+                        shrinkTowards = Alignment.Center,
+                        animationSpec = tween(1500)
+                    )
         },
         label = "ExpandShrinkTransition"
     ) { currentState ->
@@ -147,7 +217,17 @@ private fun ExpandShrinkTransition(targetState: String) {
 private fun SizeTransformTransition(targetState: String) {
     AnimatedContent(
         targetState = targetState,
-
+        transitionSpec = {
+            scaleIn(
+                initialScale = 0.5f,
+                animationSpec = tween(durationMillis = 1500, easing = LinearOutSlowInEasing)
+            ) + fadeIn(animationSpec = tween(1000)) togetherWith
+                    scaleOut(
+                        targetScale = 1.5f,
+                        animationSpec = tween(durationMillis = 1500, easing = FastOutLinearInEasing)
+                    ) + fadeOut(animationSpec = tween(1000)) using
+                    SizeTransform(clip = false)
+        },
         label = "SizeTransformTransition"
     ) { currentState ->
         Content(currentState)
@@ -160,8 +240,10 @@ private fun CustomTransition(targetState: String) {
     AnimatedContent(
         targetState = targetState,
         transitionSpec = {
-            fadeIn(animationSpec = tween(500)) + scaleIn(initialScale = 0.5f) togetherWith
-                    fadeOut(animationSpec = tween(500)) + scaleOut(targetScale = 0.9f)
+            (fadeIn(animationSpec = tween(1500)) +
+                    scaleIn(initialScale = 0.5f, animationSpec = tween(1500))) togetherWith
+                    (fadeOut(animationSpec = tween(1500)) +
+                            scaleOut(targetScale = 0.9f, animationSpec = tween(1500)))
         },
         label = "CustomTransition"
     ) { currentState ->

@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import com.droidcon.composablebank.components.InteractiveColorPicker
 import com.droidcon.composablebank.R
@@ -37,97 +38,167 @@ fun Shadow(navController: NavController, name: String) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-            CustomTopAppBar(title = name, navController = navController)
-        },
+        topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                InteractiveColorPicker(
-                    label = "Shadow Color",
-                    selectedColor = shadowColor,
-                    onColorSelected = { shadowColor = it }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Elevation: ${elevation.value.toInt()} dp",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-                Slider(
-                    value = elevation.value,
-                    onValueChange = { elevation = it.dp },
-                    valueRange = 0f..30f,
-                    steps = 30
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Offset X: ${offsetX.value.toInt()} dp",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-                Slider(
-                    value = offsetX.value,
-                    onValueChange = { offsetX = it.dp },
-                    valueRange = -20f..20f,
-                    steps = 40
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Offset Y: ${offsetY.value.toInt()} dp",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-                Slider(
-                    value = offsetY.value,
-                    onValueChange = { offsetY = it.dp },
-                    valueRange = -20f..20f,
-                    steps = 40
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(200.dp)
-                        .shadow(
-                            elevation = elevation,
-                            shape = RoundedCornerShape(16.dp),
-                            clip = true,
-                            ambientColor = shadowColor.copy(alpha = 0.5f),
-                            spotColor = shadowColor
-                        )
-                        .offset { IntOffset(offsetX.roundToPx(), offsetY.roundToPx()) }
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.droidcon),
-                        contentDescription = "Sample Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(onClick = {
+            MainShadowContent(
+                paddingValues = paddingValues,
+                elevation = elevation,
+                shadowColor = shadowColor,
+                offsetX = offsetX,
+                offsetY = offsetY,
+                onElevationChange = { elevation = it },
+                onColorChange = { shadowColor = it },
+                onOffsetXChange = { offsetX = it },
+                onOffsetYChange = { offsetY = it },
+                onReset = {
                     elevation = 8.dp
                     shadowColor = Color.Black
                     offsetX = 0.dp
                     offsetY = 0.dp
-                }) {
-                    Text("Reset Shadow")
                 }
-            }
+            )
         }
     )
+}
+
+@Composable
+private fun MainShadowContent(
+    paddingValues: PaddingValues,
+    elevation: Dp,
+    shadowColor: Color,
+    offsetX: Dp,
+    offsetY: Dp,
+    onElevationChange: (Dp) -> Unit,
+    onColorChange: (Color) -> Unit,
+    onOffsetXChange: (Dp) -> Unit,
+    onOffsetYChange: (Dp) -> Unit,
+    onReset: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(32.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ColorSelectionSection(shadowColor, onColorChange)
+        ShadowControlsSection(
+            elevation = elevation,
+            offsetX = offsetX,
+            offsetY = offsetY,
+            onElevationChange = onElevationChange,
+            onOffsetXChange = onOffsetXChange,
+            onOffsetYChange = onOffsetYChange
+        )
+        ShadowPreviewBox(
+            elevation = elevation,
+            shadowColor = shadowColor,
+            offsetX = offsetX,
+            offsetY = offsetY
+        )
+        ResetButton(onReset)
+    }
+}
+
+@Composable
+private fun ColorSelectionSection(selectedColor: Color, onColorSelected: (Color) -> Unit) {
+    InteractiveColorPicker(
+        label = "Shadow Color",
+        selectedColor = selectedColor,
+        onColorSelected = onColorSelected
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@Composable
+private fun ShadowControlsSection(
+    elevation: Dp,
+    offsetX: Dp,
+    offsetY: Dp,
+    onElevationChange: (Dp) -> Unit,
+    onOffsetXChange: (Dp) -> Unit,
+    onOffsetYChange: (Dp) -> Unit
+) {
+    CustomSlider(
+        label = "Elevation",
+        value = elevation.value,
+        valueRange = 0f..30f,
+        onValueChange = { onElevationChange(it.dp) },
+        valueSuffix = "dp"
+    )
+
+    CustomSlider(
+        label = "Offset X",
+        value = offsetX.value,
+        valueRange = -20f..20f,
+        onValueChange = { onOffsetXChange(it.dp) },
+        valueSuffix = "dp"
+    )
+
+    CustomSlider(
+        label = "Offset Y",
+        value = offsetY.value,
+        valueRange = -20f..20f,
+        onValueChange = { onOffsetYChange(it.dp) },
+        valueSuffix = "dp"
+    )
+}
+
+@Composable
+private fun CustomSlider(
+    label: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    onValueChange: (Float) -> Unit,
+    valueSuffix: String = ""
+) {
+    Text(
+        text = "$label: ${value.toInt()} $valueSuffix",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(vertical = 8.dp)
+    )
+    Slider(
+        value = value,
+        onValueChange = onValueChange,
+        valueRange = valueRange,
+        steps = (valueRange.endInclusive - valueRange.start).toInt()
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@Composable
+private fun ShadowPreviewBox(
+    elevation: Dp,
+    shadowColor: Color,
+    offsetX: Dp,
+    offsetY: Dp
+) {
+    Box(
+        modifier = Modifier
+            .size(200.dp)
+            .shadow(
+                elevation = elevation,
+                shape = RoundedCornerShape(16.dp),
+                clip = true,
+                ambientColor = shadowColor.copy(alpha = 0.5f),
+                spotColor = shadowColor
+            )
+            .offset { IntOffset(offsetX.roundToPx(), offsetY.roundToPx()) }
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.droidcon),
+            contentDescription = "Sample Image",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@Composable
+private fun ResetButton(onReset: () -> Unit) {
+    Button(onClick = onReset) {
+        Text("Reset Shadow")
+    }
 }

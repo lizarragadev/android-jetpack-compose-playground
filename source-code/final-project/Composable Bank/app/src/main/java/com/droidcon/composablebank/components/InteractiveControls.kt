@@ -11,29 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
-
-@Composable
-fun InteractiveCheckbox(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(8.dp)
-    ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = onCheckedChange
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = if (checked) "Checked" else "Unchecked")
-    }
-}
 
 @Composable
 fun InteractiveSlider(
@@ -46,16 +26,17 @@ fun InteractiveSlider(
     Column(modifier = modifier) {
         Text(
             text = "$label: ${value.toInt()}",
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 4.dp)
         )
         Slider(
             value = value,
             onValueChange = onValueChange,
-            valueRange = valueRange
+            valueRange = valueRange,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
-
 @Composable
 fun InteractiveButton(
     text: String,
@@ -117,13 +98,17 @@ fun InteractiveColorPicker(
     onColorSelected: (Color) -> Unit
 ) {
     val colors = listOf(
-        Color.Red,
-        Color.Blue,
-        Color.Green,
-        Color.Yellow,
-        Color.Black,
-        Color.White,
-        Color.Gray
+        Color(0xFF7E57C2),
+        Color(0xFF4527A0),
+        Color(0xFFFFD740),
+        Color(0xFFF57F17),
+        Color(0xFF009688),
+        Color(0xFF4CAF50),
+        Color(0xFFF44336),
+        Color(0xFF2196F3),
+        Color(0xFF9E9E9E),
+        Color(0xFFFFFFFF),
+        Color(0xFF000000)
     )
 
     Column(modifier = Modifier.padding(20.dp)) {
@@ -136,7 +121,7 @@ fun InteractiveColorPicker(
             colors.forEach { color ->
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(30.dp)
                         .background(color)
                         .border(
                             width = if (color == selectedColor) 2.dp else 0.dp,
@@ -193,30 +178,28 @@ fun InteractiveRadioButtonGroup(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 32.dp)
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)
-        ) {
-            options.forEach { option ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.selectable(
-                        selected = (option.lowercase().replace(" ", "")) == selectedOption,
-                        onClick = { onOptionSelected(option.lowercase().replace(" ", "")) }
+        options.forEach { option ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectable(
+                        selected = (option == selectedOption),
+                        onClick = { onOptionSelected(option) }
                     )
-                ) {
-                    RadioButton(
-                        selected = (option.lowercase().replace(" ", "")) == selectedOption,
-                        onClick = null
-                    )
-                    Text(
-                        text = option,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                }
+                    .padding(vertical = 4.dp)
+            ) {
+                RadioButton(
+                    selected = (option == selectedOption),
+                    onClick = null
+                )
+                Text(
+                    text = option,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
             }
         }
     }

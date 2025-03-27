@@ -35,83 +35,134 @@ internal fun BlurEffect(navController: NavController, name: String) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-            CustomTopAppBar(title = name, navController = navController)
-        },
+        topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(32.dp))
-                InteractiveSwitch(
-                    label = "Show Original Image",
-                    checked = showOriginal,
-                    onCheckedChange = { showOriginal = it }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Blur Radius: ${blurRadius.toInt()} px",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-                Slider(
-                    value = blurRadius,
-                    onValueChange = { blurRadius = it },
-                    valueRange = 0f..50f,
-                    steps = 10,
-                    modifier = Modifier.padding(horizontal = 32.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(300.dp)
-                        .then(
-                            if (!showOriginal && blurRadius > 0) {
-                                Modifier.blur(
-                                    radiusX = blurRadius.dp,
-                                    radiusY = blurRadius.dp,
-                                    edgeTreatment = BlurredEdgeTreatment.Unbounded
-                                )
-                            } else {
-                                Modifier
-                            }
-                        )
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.droidcon),
-                        contentDescription = "Sample Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.5f))
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Progressive Blur",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = Color.White
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(onClick = { blurRadius = 0f }) {
-                    Text("Reset Blur")
-                }
-            }
+            MainContent(
+                paddingValues = paddingValues,
+                blurRadius = blurRadius,
+                showOriginal = showOriginal,
+                onBlurChange = { blurRadius = it },
+                onShowOriginalChange = { showOriginal = it }
+            )
         }
     )
+}
+
+@Composable
+private fun MainContent(
+    paddingValues: PaddingValues,
+    blurRadius: Float,
+    showOriginal: Boolean,
+    onBlurChange: (Float) -> Unit,
+    onShowOriginalChange: (Boolean) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ControlsSection(
+            blurRadius = blurRadius,
+            showOriginal = showOriginal,
+            onBlurChange = onBlurChange,
+            onShowOriginalChange = onShowOriginalChange
+        )
+
+        BlurredImageContainer(
+            blurRadius = blurRadius,
+            showOriginal = showOriginal
+        )
+
+        ResetButton { onBlurChange(0f) }
+    }
+}
+
+@Composable
+private fun ControlsSection(
+    blurRadius: Float,
+    showOriginal: Boolean,
+    onBlurChange: (Float) -> Unit,
+    onShowOriginalChange: (Boolean) -> Unit
+) {
+    Spacer(modifier = Modifier.height(32.dp))
+
+    InteractiveSwitch(
+        label = "Show Original Image",
+        checked = showOriginal,
+        onCheckedChange = onShowOriginalChange
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text(
+        text = "Blur Radius: ${blurRadius.toInt()} px",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(vertical = 8.dp)
+    )
+
+    Slider(
+        value = blurRadius,
+        onValueChange = onBlurChange,
+        valueRange = 0f..50f,
+        steps = 10,
+        modifier = Modifier.padding(horizontal = 32.dp)
+    )
+}
+
+@Composable
+private fun BlurredImageContainer(blurRadius: Float, showOriginal: Boolean) {
+    Spacer(modifier = Modifier.height(32.dp))
+    Box(
+        modifier = Modifier
+            .size(300.dp)
+            .blurEffect(blurRadius, showOriginal)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.droidcon),
+            contentDescription = "Sample Image",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        OverlayText()
+    }
+}
+
+@Composable
+private fun OverlayText() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Progressive Blur",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.White
+        )
+    }
+}
+
+@Composable
+private fun ResetButton(onReset: () -> Unit) {
+    Spacer(modifier = Modifier.height(32.dp))
+    Button(onClick = onReset) {
+        Text("Reset Blur")
+    }
+}
+
+private fun Modifier.blurEffect(radius: Float, showOriginal: Boolean): Modifier {
+    return if (!showOriginal && radius > 0) {
+        this.blur(
+            radiusX = radius.dp,
+            radiusY = radius.dp,
+            edgeTreatment = BlurredEdgeTreatment.Unbounded
+        )
+    } else {
+        this
+    }
 }

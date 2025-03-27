@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.droidcon.composablebank.components.InteractiveButton
+import com.droidcon.composablebank.data.ComposableItem
 import com.droidcon.composablebank.data.DataProvider
 import com.droidcon.composablebank.navigation.Destinations
 import com.droidcon.composablebank.utils.CustomTopAppBar
@@ -29,36 +30,73 @@ fun ComposableDetailScreen(composableName: String?, navController: NavController
     ) {
         CustomTopAppBar(
             title = composable?.name ?: "Detail",
-            navController = navController)
+            navController = navController
+        )
 
-        Column(modifier = Modifier.padding(16.dp)) {
-            if (composable != null) {
-                Text(
-                    text = composable.name,
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.align(CenterHorizontally))
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = composable.description, style = MaterialTheme.typography.bodyMedium)
+        DetailContent(composable, navController)
+    }
+}
 
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "Common use:", style = MaterialTheme.typography.titleMedium)
-                Text(text = composable.commonUse, style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(16.dp))
+@Composable
+private fun DetailContent(composable: ComposableItem?, navController: NavController) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        if (composable != null) {
+            ComposableHeader(composable)
 
-                Text(text = "Properties:", style = MaterialTheme.typography.titleMedium)
-                PropertyList(properties = composable.properties)
+            Spacer(modifier = Modifier.height(16.dp))
+            SectionTitle("Common use:")
+            SectionText(composable.commonUse)
 
-                Spacer(modifier = Modifier.height(30.dp))
-                InteractiveButton(
-                    text = "View Demo",
-                    onClick = {
-                        navController.navigate(Destinations.demoRoute(composable.name))
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            } else {
-                Text(text = "Composable not found")
-            }
+            Spacer(modifier = Modifier.height(16.dp))
+            SectionTitle("Properties:")
+            PropertyList(properties = composable.properties)
+
+            Spacer(modifier = Modifier.height(30.dp))
+            ViewDemoButton(composable.name, navController)
+        } else {
+            Text(text = "Composable not found")
         }
     }
+}
+
+@Composable
+private fun ComposableHeader(composable: ComposableItem) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = CenterHorizontally
+    ) {
+        Text(
+            text = composable.name,
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        SectionText(composable.description)
+    }
+}
+
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium
+    )
+}
+
+@Composable
+private fun SectionText(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium
+    )
+}
+
+@Composable
+private fun ViewDemoButton(composableName: String, navController: NavController) {
+    InteractiveButton(
+        text = "View Demo",
+        onClick = { navController.navigate(Destinations.demoRoute(composableName)) },
+        modifier = Modifier.fillMaxWidth()
+    )
 }

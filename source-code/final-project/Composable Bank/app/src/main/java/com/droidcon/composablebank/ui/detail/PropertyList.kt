@@ -14,14 +14,7 @@ import androidx.compose.ui.unit.dp
 fun PropertyList(properties: List<String>) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         properties.forEachIndexed { index, property ->
-            Text(
-                text = property,
-                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                style = MaterialTheme.typography.bodyMedium,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
-
-            )
+            PropertyItem(property = property)
             if (index < properties.size - 1) {
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outlineVariant,
@@ -31,4 +24,15 @@ fun PropertyList(properties: List<String>) {
             }
         }
     }
+}
+
+@Composable
+private fun PropertyItem(property: String) {
+    Text(
+        text = property,
+        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+        style = MaterialTheme.typography.bodyMedium,
+        fontFamily = FontFamily.Monospace,
+        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+    )
 }

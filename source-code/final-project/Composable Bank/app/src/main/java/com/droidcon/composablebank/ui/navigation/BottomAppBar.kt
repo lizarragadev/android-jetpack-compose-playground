@@ -1,6 +1,5 @@
 package com.droidcon.composablebank.ui.navigation
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
@@ -9,18 +8,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.droidcon.composablebank.components.InteractiveSwitch
-import kotlinx.coroutines.launch
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.Alignment
+import com.droidcon.composablebank.components.InteractiveSwitch
 import com.droidcon.composablebank.utils.CustomTopAppBar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,166 +31,185 @@ fun BottomAppBar(navController: NavController, name: String) {
     var showFab by remember { mutableStateOf(true) }
     var selectedItem by remember { mutableStateOf<Int?>(null) }
 
-    val bottomBarColor by animateColorAsState(
-        targetValue = if (selectedItem != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-        label = "BottomAppBarColorAnimation"
-    )
-
-    val bottomAppBarHeight = 110.dp
-    val fabHeight = 56.dp
-
-    val offsetY = with(LocalDensity.current) {
-        ((bottomAppBarHeight.toPx() / 2) - (fabHeight.toPx() / 2)).dp
-    }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-            CustomTopAppBar(
-                title = name,
-                navController = navController
-            )
-        },
+        topBar = { CustomTopAppBar(title = name, navController = navController) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         bottomBar = {
-            BottomAppBar(
-                modifier = Modifier.fillMaxWidth(),
-                containerColor = bottomBarColor,
-                contentColor = if (selectedItem != null) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                tonalElevation = 8.dp,
-            ) {
-                if (selectedItem == null) {
-                    IconButton(onClick = {  }) {
-                        Icon(Icons.Default.Home, contentDescription = "Home")
-                    }
-                    IconButton(onClick = {  }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
-                    }
-                    IconButton(onClick = {  }) {
-                        Icon(Icons.Default.Favorite, contentDescription = "Favorite")
-                    }
-                } else {
-                    IconButton(onClick = {
-                        println("Delete clicked for item #$selectedItem")
-                        selectedItem = null
-                    }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete")
-                    }
-                    IconButton(onClick = {
-                        println("Update clicked for item #$selectedItem")
-                        selectedItem = null
-                    }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Update")
-                    }
-                    IconButton(onClick = {
-                        println("Cancel clicked")
-                        selectedItem = null
-                    }) {
-                        Icon(Icons.Default.Close, contentDescription = "Cancel")
-                    }
-                }
-            }
+            BottomBarContent(
+                selectedItem = selectedItem,
+                onActionSelected = { selectedItem = null },
+                showFab = showFab,
+                coroutineScope = coroutineScope,
+                snackbarHostState = snackbarHostState
+            )
         },
-        floatingActionButton = {
-            if (showFab) {
-                FloatingActionButton(
-                    onClick = {
-                        showSnackbar = true
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Floating Action Button clicked")
-                        }
-                    },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(end = 16.dp)
-                        .offset(y = offsetY)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-            }
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Bottom App Bar Examples",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                InteractiveSwitch(
-                    label = "Show Floating Action Button",
-                    checked = showFab,
-                    onCheckedChange = { showFab = it }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Select an item to change the Bottom App Bar",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                repeat(50) { index ->
-                    if (index % 5 == 0) {
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant,
-                            thickness = 1.dp,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                            .clickable {
-                                selectedItem = index
-                            },
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (selectedItem == index) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Item #$index",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = if (selectedItem == index) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Spacer(modifier = Modifier.weight(1f))
-
-                            if (selectedItem == index) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Selected",
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+        content = { padding ->
+            MainContent(
+                padding = padding,
+                selectedItem = selectedItem,
+                onItemSelected = { selectedItem = it },
+                showFab = showFab,
+                onShowFabChange = { newValue -> showFab = newValue }
+            )
         }
     )
+    HandleSnackbar(showSnackbar, snackbarHostState) { showSnackbar = false }
+}
 
-    if (showSnackbar) {
-        LaunchedEffect(snackbarHostState) {
-            snackbarHostState.showSnackbar("Snackbar from Bottom App Bar")
-            showSnackbar = false
+@Composable
+private fun BottomBarContent(
+    selectedItem: Int?,
+    onActionSelected: () -> Unit,
+    showFab: Boolean,
+    coroutineScope: CoroutineScope,
+    snackbarHostState: SnackbarHostState
+) {
+    val containerColor = if (selectedItem != null) MaterialTheme.colorScheme.primary
+    else MaterialTheme.colorScheme.surface
+    val contentColor = if (selectedItem != null) MaterialTheme.colorScheme.onPrimary
+    else MaterialTheme.colorScheme.onSurface
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        BottomAppBar(
+            containerColor = containerColor,
+            contentColor = contentColor,
+            tonalElevation = 8.dp
+        ) {
+            if (selectedItem == null) {
+                DefaultBottomBarIcons()
+            } else {
+                ActionBottomBarIcons(selectedItem, onActionSelected)
+            }
+        }
+
+        if (showFab) {
+            FloatingActionButton(
+                onClick = {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("FAB clicked")
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 16.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add")
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeaderContent(
+    showFab: Boolean,
+    onShowFabChange: (Boolean) -> Unit
+) {
+    Text("Bottom App Bar Examples", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 16.dp))
+    Spacer(Modifier.height(16.dp))
+    InteractiveSwitch(
+        label = "Show FAB",
+        checked = showFab,
+        onCheckedChange = { newValue -> onShowFabChange(newValue) }
+    )
+    Text("Select an item to change the Bottom App Bar", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
+}
+
+@Composable
+private fun MainContent(
+    padding: PaddingValues,
+    selectedItem: Int?,
+    onItemSelected: (Int) -> Unit,
+    showFab: Boolean,
+    onShowFabChange: (Boolean) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        HeaderContent(showFab, onShowFabChange)
+        ItemsList(selectedItem, onItemSelected)
+    }
+}
+
+@Composable
+private fun DefaultBottomBarIcons() {
+    listOf(Icons.Default.Home, Icons.Default.Search, Icons.Default.Favorite).forEach { icon ->
+        IconButton(onClick = {}) {
+            Icon(icon, contentDescription = null)
+        }
+    }
+}
+
+@Composable
+private fun ActionBottomBarIcons(selectedItem: Int, onActionSelected: () -> Unit) {
+    val actions = listOf(
+        Icons.Default.Delete to "Delete",
+        Icons.Default.Edit to "Update",
+        Icons.Default.Close to "Cancel"
+    )
+
+    actions.forEach { (icon, description) ->
+        IconButton(onClick = {
+            println("$description clicked for item #$selectedItem")
+            onActionSelected()
+        }) {
+            Icon(icon, contentDescription = description)
+        }
+    }
+}
+
+@Composable
+private fun ItemsList(selectedItem: Int?, onItemSelected: (Int) -> Unit) {
+    repeat(50) { index ->
+        ListItem(index, selectedItem == index) { onItemSelected(index) }
+    }
+}
+
+@Composable
+private fun ListItem(index: Int, isSelected: Boolean, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Row(
+            Modifier
+                .padding(16.dp)
+                .heightIn(min = 48.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Item #$index",
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.weight(1f))
+            if (isSelected) Icon(
+                Icons.Default.Check,
+                "Selected",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+    }
+}
+
+@Composable
+private fun HandleSnackbar(show: Boolean, hostState: SnackbarHostState, onDismiss: () -> Unit) {
+    if (show) {
+        LaunchedEffect(hostState) {
+            hostState.showSnackbar("Snackbar from Bottom App Bar")
+            onDismiss()
         }
     }
 }

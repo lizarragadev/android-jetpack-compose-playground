@@ -39,58 +39,92 @@ fun CategoryItem(
         elevation = cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.onPrimary)
-                    .clickable { isExpanded = !isExpanded }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight,
-                    contentDescription = if (isExpanded) "Collapse" else "Expand",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = categoryName,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
+            CategoryHeader(
+                categoryName = categoryName,
+                isExpanded = isExpanded,
+                onHeaderClick = { isExpanded = !isExpanded }
+            )
+
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically(expandFrom = Alignment.Top),
                 exit = shrinkVertically(shrinkTowards = Alignment.Top)
             ) {
-                Column {
-                    items.forEachIndexed { index, item ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    navController.navigate(Destinations.detailRoute(item.name))
-                                }
-                                .padding(horizontal = 24.dp, vertical = 15.dp)
-                        ) {
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = item.name,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        if (index < items.size - 1) {
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant,
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 24.dp)
-                            )
-                        }
-                    }
-                }
+                CategoryListItems(items = items, navController = navController)
             }
         }
+    }
+}
+
+@Composable
+private fun CategoryHeader(
+    categoryName: String,
+    isExpanded: Boolean,
+    onHeaderClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.onPrimary)
+            .clickable(onClick = onHeaderClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = if (isExpanded) Icons.Default.ArrowDropDown
+            else Icons.AutoMirrored.Filled.ArrowRight,
+            contentDescription = if (isExpanded) "Collapse" else "Expand",
+            tint = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = categoryName,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
+}
+
+@Composable
+private fun CategoryListItems(
+    items: List<ComposableItem>,
+    navController: NavController
+) {
+    Column {
+        items.forEachIndexed { index, item ->
+            CategoryListItem(
+                item = item,
+                navController = navController,
+                showDivider = index < items.size - 1
+            )
+        }
+    }
+}
+
+@Composable
+private fun CategoryListItem(
+    item: ComposableItem,
+    navController: NavController,
+    showDivider: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { navController.navigate(Destinations.detailRoute(item.name)) }
+            .padding(horizontal = 24.dp, vertical = 15.dp)
+    ) {
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = item.name,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+    if (showDivider) {
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.outlineVariant,
+            thickness = 1.dp,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
     }
 }

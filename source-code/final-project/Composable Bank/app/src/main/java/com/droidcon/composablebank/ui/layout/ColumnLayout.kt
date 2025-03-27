@@ -25,96 +25,197 @@ import com.droidcon.composablebank.components.InteractiveRadioButtonGroup
 
 @Composable
 fun ColumnLayout(navController: NavController, name: String) {
-    var verticalArrangementName by remember { mutableStateOf("top") }
-    var horizontalAlignmentName by remember { mutableStateOf("start") }
+    var verticalArrangementName by remember { mutableStateOf("Top") }
+    var horizontalAlignmentName by remember { mutableStateOf("Start") }
 
-    val verticalArrangements = mapOf(
-        "top" to Arrangement.Top,
-        "center" to Arrangement.Center,
-        "bottom" to Arrangement.Bottom,
-        "spacebetween" to Arrangement.SpaceBetween,
-        "spacearound" to Arrangement.SpaceAround,
-        "spaceevenly" to Arrangement.SpaceEvenly
-    )
+    val verticalArrangements = remember {
+        mapOf(
+            "Top" to Arrangement.Top,
+            "Center" to Arrangement.Center,
+            "Bottom" to Arrangement.Bottom,
+            "SpaceBetween" to Arrangement.SpaceBetween,
+            "SpaceAround" to Arrangement.SpaceAround,
+            "SpaceEvenly" to Arrangement.SpaceEvenly
+        )
+    }
 
-    val horizontalAlignments = mapOf(
-        "start" to Alignment.Start,
-        "center" to Alignment.CenterHorizontally,
-        "end" to Alignment.End
-    )
+    val horizontalAlignments = remember {
+        mapOf(
+            "Start" to Alignment.Start,
+            "Center" to Alignment.CenterHorizontally,
+            "End" to Alignment.End
+        )
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    InteractiveRadioButtonGroup(
-                        options = verticalArrangements.keys.toList(),
-                        selectedOption = verticalArrangementName,
-                        onOptionSelected = { verticalArrangementName = it }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    InteractiveRadioButtonGroup(
-                        options = horizontalAlignments.keys.toList(),
-                        selectedOption = horizontalAlignmentName,
-                        onOptionSelected = { horizontalAlignmentName = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(500.dp)
-                        .padding(16.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
-                    verticalArrangement = verticalArrangements[verticalArrangementName] ?: Arrangement.Top,
-                    horizontalAlignment = horizontalAlignments[horizontalAlignmentName] ?: Alignment.Start,
-                ) {
-                    repeat(5) { index ->
-                        Box(
-                            modifier = Modifier
-                                .width(200.dp)
-                                .height(80.dp)
-                                .background(
-                                    color = when (index) {
-                                        0 -> MaterialTheme.colorScheme.primary
-                                        1 -> MaterialTheme.colorScheme.secondary
-                                        2 -> MaterialTheme.colorScheme.tertiary
-                                        3 -> MaterialTheme.colorScheme.error
-                                        4 -> MaterialTheme.colorScheme.primary
-                                        else -> MaterialTheme.colorScheme.surface
-                                    },
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = "Item ${index + 1}",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        }
-                    }
-                }
-            }
+            MainContent(
+                paddingValues = paddingValues,
+                verticalArrangementName = verticalArrangementName,
+                horizontalAlignmentName = horizontalAlignmentName,
+                verticalArrangements = verticalArrangements,
+                horizontalAlignments = horizontalAlignments,
+                onVerticalArrangementChange = { verticalArrangementName = it },
+                onHorizontalAlignmentChange = { horizontalAlignmentName = it }
+            )
         }
     )
+}
 
+@Composable
+private fun MainContent(
+    paddingValues: PaddingValues,
+    verticalArrangementName: String,
+    horizontalAlignmentName: String,
+    verticalArrangements: Map<String, Arrangement.Vertical>,
+    horizontalAlignments: Map<String, Alignment.Horizontal>,
+    onVerticalArrangementChange: (String) -> Unit,
+    onHorizontalAlignmentChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ColumnConfigurationPanel(
+            verticalArrangementName = verticalArrangementName,
+            horizontalAlignmentName = horizontalAlignmentName,
+            verticalArrangements = verticalArrangements.keys.toList(),
+            horizontalAlignments = horizontalAlignments.keys.toList(),
+            onVerticalArrangementChange = onVerticalArrangementChange,
+            onHorizontalAlignmentChange = onHorizontalAlignmentChange
+        )
+
+        DemoColumn(
+            verticalArrangement = verticalArrangements[verticalArrangementName] ?: Arrangement.Top,
+            horizontalAlignment = horizontalAlignments[horizontalAlignmentName] ?: Alignment.Start
+        )
+    }
+}
+
+@Composable
+private fun ColumnConfigurationPanel(
+    verticalArrangementName: String,
+    horizontalAlignmentName: String,
+    verticalArrangements: List<String>,
+    horizontalAlignments: List<String>,
+    onVerticalArrangementChange: (String) -> Unit,
+    onHorizontalAlignmentChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ArrangementSelection(
+            options = verticalArrangements,
+            selectedOption = verticalArrangementName,
+            onOptionSelected = onVerticalArrangementChange
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        AlignmentSelection(
+            options = horizontalAlignments,
+            selectedOption = horizontalAlignmentName,
+            onOptionSelected = onHorizontalAlignmentChange
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun ArrangementSelection(
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
+    Column {
+        Text(
+            text = "Vertical Arrangement",
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        InteractiveRadioButtonGroup(
+            options = options,
+            selectedOption = selectedOption,
+            onOptionSelected = onOptionSelected
+        )
+    }
+}
+
+@Composable
+private fun AlignmentSelection(
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
+    Column {
+        Text(
+            text = "Horizontal Alignment",
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        InteractiveRadioButtonGroup(
+            options = options,
+            selectedOption = selectedOption,
+            onOptionSelected = onOptionSelected
+        )
+    }
+}
+
+@Composable
+private fun DemoColumn(
+    verticalArrangement: Arrangement.Vertical,
+    horizontalAlignment: Alignment.Horizontal
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(500.dp)
+            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment
+    ) {
+        repeat(5) { index ->
+            ColoredBoxItem(index = index)
+        }
+    }
+}
+
+@Composable
+private fun ColoredBoxItem(index: Int) {
+    Box(
+        modifier = Modifier
+            .width(200.dp)
+            .height(80.dp)
+            .background(
+                color = when (index) {
+                    0 -> MaterialTheme.colorScheme.primary
+                    1 -> MaterialTheme.colorScheme.secondary
+                    2 -> MaterialTheme.colorScheme.tertiary
+                    3 -> MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.primary
+                },
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Item ${index + 1}",
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
 }

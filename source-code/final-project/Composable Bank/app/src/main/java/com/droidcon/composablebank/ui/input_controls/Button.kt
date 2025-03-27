@@ -30,6 +30,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +39,7 @@ fun Buttons(navController: NavController, name: String) {
     var showSnackbar by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var buttonStyle by remember { mutableStateOf("filled") }
+    var buttonStyle by remember { mutableStateOf("Filled") }
     var showIcon by remember { mutableStateOf(true) }
     var isLoading by remember { mutableStateOf(false) }
     var buttonColor by remember { mutableStateOf(Color.Blue) }
@@ -46,259 +48,40 @@ fun Buttons(navController: NavController, name: String) {
     val musicGenres = listOf("Rock", "Jazz", "Pop")
     val hobbies = listOf("Leer", "Jugar", "Cocinar", "Viajar")
     var selectedSingle by remember { mutableIntStateOf(0) }
-    var selectedMulti by remember { mutableStateOf(listOf(false, false, false, false)) }
+    var selectedMulti by remember { mutableStateOf(List(hobbies.size) { false }) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { CustomTopAppBar(title = name, navController = navController) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
-            if (useExtendedFab) {
-                ExtendedFloatingActionButton(
-                    text = { Text("Extended FAB") },
-                    icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
-                    onClick = { showSnackbar = true },
-                    containerColor = buttonColor,
-                    modifier = Modifier.padding(16.dp)
-                )
-            } else {
-                FloatingActionButton(
-                    onClick = { showSnackbar = true },
-                    containerColor = buttonColor,
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-            }
+            CustomFAB(
+                useExtended = useExtendedFab,
+                color = buttonColor,
+                onClick = { showSnackbar = true }
+            )
         },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp)
-                ) {
-                    InteractiveRadioButtonGroup(
-                        options = listOf("Filled", "Tonal", "Outlined", "Text", "Elevated"),
-                        selectedOption = buttonStyle,
-                        onOptionSelected = { buttonStyle = it.lowercase() }
-                    )
-                    InteractiveSwitch(
-                        label = "Show Icon",
-                        checked = showIcon,
-                        onCheckedChange = { showIcon = it }
-                    )
-                    InteractiveSwitch(
-                        label = "Loading State",
-                        checked = isLoading,
-                        onCheckedChange = { isLoading = it }
-                    )
-                    InteractiveColorPicker(
-                        label = "Button Color",
-                        selectedColor = buttonColor,
-                        onColorSelected = { buttonColor = it }
-                    )
-                    InteractiveSwitch(
-                        label = "Extended FAB",
-                        checked = useExtendedFab,
-                        onCheckedChange = { useExtendedFab = it }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                when (buttonStyle) {
-                    "filled" -> Button(
-                        onClick = { showSnackbar = true },
-                        enabled = !isLoading,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = buttonColor,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    ) {
-                        if (showIcon) Icon(Icons.Default.Check, "Check", modifier = Modifier.size(18.dp))
-                        Text("Filled Button", modifier = Modifier.padding(start = 8.dp))
-                        if (isLoading) CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp).padding(start = 8.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-
-                    "tonal" -> FilledTonalButton(
-                        onClick = { showSnackbar = true },
-                        enabled = !isLoading,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = buttonColor.copy(alpha = 0.2f),
-                            contentColor = buttonColor
-                        ),
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    ) {
-                        if (showIcon) Icon(Icons.Default.Edit, "Edit", modifier = Modifier.size(18.dp))
-                        Text("Tonal Button", modifier = Modifier.padding(start = 8.dp))
-                    }
-
-                    "outlined" -> OutlinedButton(
-                        onClick = { showSnackbar = true },
-                        enabled = !isLoading,
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = buttonColor
-                        ),
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    ) {
-                        if (showIcon) Icon(Icons.Default.Delete, "Delete", modifier = Modifier.size(18.dp))
-                        Text("Outlined Button", modifier = Modifier.padding(start = 8.dp))
-                    }
-
-                    "text" -> TextButton(
-                        onClick = { showSnackbar = true },
-                        enabled = !isLoading,
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    ) {
-                        if (showIcon) Icon(Icons.Default.Share, "Share", modifier = Modifier.size(18.dp))
-                        Text("Text Button", modifier = Modifier.padding(start = 8.dp))
-                    }
-
-                    "elevated" -> ElevatedButton(
-                        onClick = { showSnackbar = true },
-                        enabled = !isLoading,
-                        elevation = ButtonDefaults.elevatedButtonElevation(),
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    ) {
-                        if (showIcon) Icon(Icons.Default.Star, "Star", modifier = Modifier.size(18.dp))
-                        Text("Elevated Button", modifier = Modifier.padding(start = 8.dp))
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Icon Button",
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(8.dp)
-                )
-                IconButton(
-                    onClick = { showSnackbar = true },
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(
-                            color = buttonColor.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                ) {
-                    Icon(Icons.Default.Settings, "Settings", tint = buttonColor)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Music Genres",
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(8.dp)
-                )
-                SingleChoiceSegmentedButtonRow(
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                ) {
-                    musicGenres.forEachIndexed { index, genre ->
-                        SegmentedButton(
-                            selected = selectedSingle == index,
-                            onClick = { selectedSingle = index },
-                            shape = when (index) {
-                                0 -> RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
-                                musicGenres.lastIndex -> RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp)
-                                else -> RoundedCornerShape(0.dp)
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = when (genre) {
-                                        "Rock" -> Icons.Default.MusicNote
-                                        "Jazz" -> Icons.Default.Brush
-                                        "Pop" -> Icons.Default.Star
-                                        else -> Icons.Default.Delete
-                                    },
-                                    contentDescription = genre,
-                                    tint = if (selectedSingle == index)
-                                        buttonColor
-                                    else
-                                        MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = genre,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (selectedSingle == index)
-                                        buttonColor
-                                    else
-                                        MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Hobbies",
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(8.dp)
-                )
-                MultiChoiceSegmentedButtonRow(
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                ) {
-                    hobbies.forEachIndexed { index, hobby ->
-                        SegmentedButton(
-                            checked = selectedMulti[index],
-                            onCheckedChange = {
-                                val newList = selectedMulti.toMutableList()
-                                newList[index] = !newList[index]
-                                selectedMulti = newList
-                            },
-                            shape = when (index) {
-                                0 -> RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
-                                hobbies.lastIndex -> RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp)
-                                else -> RoundedCornerShape(0.dp)
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = when (hobby) {
-                                        "Leer" -> Icons.Default.Book
-                                        "Jugar" -> Icons.Default.SportsEsports
-                                        "Cocinar" -> Icons.Default.Kitchen
-                                        "Viajar" -> Icons.Default.Luggage
-                                        else -> Icons.Default.Help
-                                    },
-                                    contentDescription = hobby,
-                                    tint = if (selectedMulti[index])
-                                        buttonColor
-                                    else
-                                        MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = hobby,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (selectedMulti[index])
-                                        buttonColor
-                                    else
-                                        MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            MainContent(
+                paddingValues = paddingValues,
+                buttonStyle = buttonStyle,
+                showIcon = showIcon,
+                isLoading = isLoading,
+                buttonColor = buttonColor,
+                useExtendedFab = useExtendedFab,
+                musicGenres = musicGenres,
+                hobbies = hobbies,
+                selectedSingle = selectedSingle,
+                selectedMulti = selectedMulti,
+                onStyleChange = { buttonStyle = it },
+                onIconChange = { showIcon = it },
+                onLoadingChange = { isLoading = it },
+                onColorChange = { buttonColor = it },
+                onFabTypeChange = { useExtendedFab = it },
+                onSingleSelect = { selectedSingle = it },
+                onMultiSelect = { selectedMulti = it },
+                onButtonClick = { showSnackbar = true }
+            )
         }
     )
 
@@ -307,5 +90,356 @@ fun Buttons(navController: NavController, name: String) {
             snackbarHostState.showSnackbar("${buttonStyle.uppercase()} button clicked")
             showSnackbar = false
         }
+    }
+}
+
+@Composable
+private fun MainContent(
+    paddingValues: PaddingValues,
+    buttonStyle: String,
+    showIcon: Boolean,
+    isLoading: Boolean,
+    buttonColor: Color,
+    useExtendedFab: Boolean,
+    musicGenres: List<String>,
+    hobbies: List<String>,
+    selectedSingle: Int,
+    selectedMulti: List<Boolean>,
+    onStyleChange: (String) -> Unit,
+    onIconChange: (Boolean) -> Unit,
+    onLoadingChange: (Boolean) -> Unit,
+    onColorChange: (Color) -> Unit,
+    onFabTypeChange: (Boolean) -> Unit,
+    onSingleSelect: (Int) -> Unit,
+    onMultiSelect: (List<Boolean>) -> Unit,
+    onButtonClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ButtonSettingsPanel(
+            buttonStyle = buttonStyle,
+            showIcon = showIcon,
+            isLoading = isLoading,
+            buttonColor = buttonColor,
+            useExtendedFab = useExtendedFab,
+            onStyleChange = onStyleChange,
+            onIconChange = onIconChange,
+            onLoadingChange = onLoadingChange,
+            onColorChange = onColorChange,
+            onFabTypeChange = onFabTypeChange
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        DynamicButton(
+            style = buttonStyle,
+            showIcon = showIcon,
+            isLoading = isLoading,
+            color = buttonColor,
+            onClick = onButtonClick
+        )
+
+        IconButtonSection(buttonColor, onButtonClick)
+
+        SegmentedButtonGroup(
+            title = "Music Genres",
+            options = musicGenres,
+            selectedIndices = List(musicGenres.size) { it == selectedSingle },
+            isMultiSelect = false,
+            onSelectionChange = { list ->
+                val index = list.indexOfFirst { it }
+                if (index != -1) onSingleSelect(index)
+            },
+            buttonColor = buttonColor
+        )
+
+        SegmentedButtonGroup(
+            title = "Hobbies",
+            options = hobbies,
+            selectedIndices = selectedMulti,
+            isMultiSelect = true,
+            onSelectionChange = onMultiSelect,
+            buttonColor = buttonColor
+        )
+        Spacer(Modifier.height(100.dp))
+    }
+}
+
+@Composable
+private fun ButtonSettingsPanel(
+    buttonStyle: String,
+    showIcon: Boolean,
+    isLoading: Boolean,
+    buttonColor: Color,
+    useExtendedFab: Boolean,
+    onStyleChange: (String) -> Unit,
+    onIconChange: (Boolean) -> Unit,
+    onLoadingChange: (Boolean) -> Unit,
+    onColorChange: (Color) -> Unit,
+    onFabTypeChange: (Boolean) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
+    ) {
+        InteractiveRadioButtonGroup(
+            options = listOf("Filled", "Tonal", "Outlined", "Text", "Elevated"),
+            selectedOption = buttonStyle,
+            onOptionSelected = onStyleChange
+        )
+        InteractiveSwitch(
+            label = "Show Icon",
+            checked = showIcon,
+            onCheckedChange = onIconChange
+        )
+        InteractiveSwitch(
+            label = "Loading State",
+            checked = isLoading,
+            onCheckedChange = onLoadingChange
+        )
+        InteractiveColorPicker(
+            label = "Button Color",
+            selectedColor = buttonColor,
+            onColorSelected = onColorChange
+        )
+        InteractiveSwitch(
+            label = "Extended FAB",
+            checked = useExtendedFab,
+            onCheckedChange = onFabTypeChange
+        )
+    }
+}
+
+@Composable
+private fun DynamicButton(
+    style: String,
+    showIcon: Boolean,
+    isLoading: Boolean,
+    color: Color,
+    onClick: () -> Unit
+) {
+    val buttonModifier = Modifier.fillMaxWidth(0.8f)
+
+    when (style) {
+        "Filled" -> Button(
+            onClick = onClick,
+            enabled = !isLoading,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = color,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            modifier = buttonModifier
+        ) {
+            ButtonContent(icon = Icons.Default.Check, text = "Filled Button", showIcon, isLoading)
+        }
+        "Tonal" -> FilledTonalButton(
+            onClick = onClick,
+            enabled = !isLoading,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = color.copy(alpha = 0.2f),
+                contentColor = color
+            ),
+            modifier = buttonModifier
+        ) {
+            ButtonContent(icon = Icons.Default.Edit, text = "Tonal Button", showIcon, false)
+        }
+        "Outlined" -> OutlinedButton(
+            onClick = onClick,
+            enabled = !isLoading,
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = color),
+            modifier = buttonModifier
+        ) {
+            ButtonContent(icon = Icons.Default.Delete, text = "Outlined Button", showIcon, false)
+        }
+        "Text" -> TextButton(
+            onClick = onClick,
+            enabled = !isLoading,
+            modifier = buttonModifier
+        ) {
+            ButtonContent(icon = Icons.Default.Share, text = "Text Button", showIcon, false)
+        }
+        "Elevated" -> ElevatedButton(
+            onClick = onClick,
+            enabled = !isLoading,
+            elevation = ButtonDefaults.elevatedButtonElevation(),
+            modifier = buttonModifier
+        ) {
+            ButtonContent(icon = Icons.Default.Star, text = "Elevated Button", showIcon, false)
+        }
+    }
+}
+
+@Composable
+private fun ButtonContent(
+    icon: ImageVector,
+    text: String,
+    showIcon: Boolean,
+    isLoading: Boolean
+) {
+    if (showIcon) Icon(icon, null, modifier = Modifier.size(18.dp))
+    Text(text, modifier = Modifier.padding(start = 8.dp))
+    if (isLoading) {
+        CircularProgressIndicator(
+            modifier = Modifier
+                .size(24.dp)
+                .padding(start = 8.dp),
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+
+@Composable
+private fun IconButtonSection(
+    buttonColor: Color,
+    onClick: () -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = "Icon Button",
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(8.dp)
+        )
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier
+                .size(56.dp)
+                .background(
+                    color = buttonColor.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+        ) {
+            Icon(Icons.Default.Settings, null, tint = buttonColor)
+        }
+    }
+}
+
+@Composable
+private fun SegmentedButtonGroup(
+    title: String,
+    options: List<String>,
+    selectedIndices: List<Boolean>,
+    isMultiSelect: Boolean,
+    onSelectionChange: (List<Boolean>) -> Unit,
+    buttonColor: Color
+) {
+    Column(modifier = Modifier.fillMaxWidth(0.8f)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(8.dp)
+        )
+
+        if (isMultiSelect) {
+            MultiChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                options.forEachIndexed { index, option ->
+                    SegmentedButton(
+                        checked = selectedIndices[index],
+                        onCheckedChange = {
+                            val newList = selectedIndices.toMutableList()
+                            newList[index] = it
+                            onSelectionChange(newList)
+                        },
+                        shape = getSegmentedButtonShape(index, options.size),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        SegmentedButtonContent(
+                            option = option,
+                            selected = selectedIndices[index],
+                            buttonColor = buttonColor
+                        )
+                    }
+                }
+            }
+        } else {
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                options.forEachIndexed { index, option ->
+                    SegmentedButton(
+                        selected = selectedIndices[index],
+                        onClick = {
+                            onSelectionChange(List(options.size) { it == index })
+                        },
+                        shape = getSegmentedButtonShape(index, options.size),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        SegmentedButtonContent(
+                            option = option,
+                            selected = selectedIndices[index],
+                            buttonColor = buttonColor
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SegmentedButtonContent(
+    option: String,
+    selected: Boolean,
+    buttonColor: Color
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(
+            imageVector = when (option) {
+                "Rock" -> Icons.Default.MusicNote
+                "Jazz" -> Icons.Default.Brush
+                "Pop" -> Icons.Default.Star
+                "Leer" -> Icons.Default.Book
+                "Jugar" -> Icons.Default.SportsEsports
+                "Cocinar" -> Icons.Default.Kitchen
+                "Viajar" -> Icons.Default.Luggage
+                else -> Icons.Default.Help
+            },
+            contentDescription = option,
+            tint = if (selected) buttonColor else MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = option,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (selected) buttonColor else MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun CustomFAB(
+    useExtended: Boolean,
+    color: Color,
+    onClick: () -> Unit
+) {
+    if (useExtended) {
+        ExtendedFloatingActionButton(
+            text = { Text("Extended FAB") },
+            icon = { Icon(Icons.Default.Add, "Add") },
+            onClick = onClick,
+            containerColor = color,
+            modifier = Modifier.padding(16.dp)
+        )
+    } else {
+        FloatingActionButton(
+            onClick = onClick,
+            containerColor = color,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Icon(Icons.Default.Add, "Add")
+        }
+    }
+}
+
+private fun getSegmentedButtonShape(index: Int, total: Int): Shape {
+    return when (index) {
+        0 -> RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
+        total - 1 -> RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp)
+        else -> RoundedCornerShape(0.dp)
     }
 }

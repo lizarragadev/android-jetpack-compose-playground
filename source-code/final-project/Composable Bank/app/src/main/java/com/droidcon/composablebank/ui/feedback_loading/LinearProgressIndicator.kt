@@ -28,100 +28,209 @@ fun LinearProgressIndicator(navController: NavController, name: String) {
     var progressColor by remember { mutableStateOf(Color.Cyan) }
 
     Scaffold(
-        topBar = {
-            CustomTopAppBar(
-                title = name,
-                navController = navController
-            )
-        },
+        topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "$name Example",
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    InteractiveSwitch(
-                        label = "Indeterminate",
-                        checked = isIndeterminate,
-                        onCheckedChange = { isChecked ->
-                            isIndeterminate = isChecked
-                            if (!isChecked) {
-                                progress = 0f
-                                trackColor = Color.LightGray
-                                progressColor = Color.Cyan
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    InteractiveColorPicker(
-                        label = "Track Color",
-                        selectedColor = trackColor,
-                        onColorSelected = { trackColor = it }
-                    )
-                    InteractiveColorPicker(
-                        label = "Progress Color",
-                        selectedColor = progressColor,
-                        onColorSelected = { progressColor = it }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (!isIndeterminate) {
-                        InteractiveButton(
-                            text = "Simulate Progress",
-                            onClick = {
-                                progress = (progress + 0.1f).coerceIn(0f, 1f)
-                            },
-                            backgroundColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+            MainProgressContent(
+                paddingValues = paddingValues,
+                name = name,
+                progress = progress,
+                isIndeterminate = isIndeterminate,
+                trackColor = trackColor,
+                progressColor = progressColor,
+                onIndeterminateChange = { checked ->
+                    isIndeterminate = checked
+                    if (!checked) {
+                        progress = 0f
+                        trackColor = Color.LightGray
+                        progressColor = Color.Cyan
                     }
-
-                    Spacer(modifier = Modifier.height(30.dp))
-
-                    if (isIndeterminate) {
-                        LinearProgressIndicator(
-                            modifier = Modifier.fillMaxWidth().height(8.dp),
-                            color = progressColor,
-                            trackColor = trackColor,
-                            gapSize = 4.dp,
-                            strokeCap = StrokeCap.Square
-                        )
-                    } else {
-                        LinearProgressIndicator(
-                            modifier = Modifier.fillMaxWidth().height(8.dp),
-                            color = progressColor,
-                            trackColor = trackColor,
-                            progress = { progress },
-                            gapSize = 1.dp,
-                            strokeCap = StrokeCap.Round
-                        )
-                    }
-
-                    if (!isIndeterminate) {
-                        Text(
-                            text = "Progress: ${(progress * 100).toInt()}%",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
-                }
-            }
+                },
+                onTrackColorChange = { trackColor = it },
+                onProgressColorChange = { progressColor = it },
+                onProgressIncrement = { progress = (progress + 0.1f).coerceIn(0f, 1f) }
+            )
         }
+    )
+}
+
+@Composable
+private fun MainProgressContent(
+    paddingValues: PaddingValues,
+    name: String,
+    progress: Float,
+    isIndeterminate: Boolean,
+    trackColor: Color,
+    progressColor: Color,
+    onIndeterminateChange: (Boolean) -> Unit,
+    onTrackColorChange: (Color) -> Unit,
+    onProgressColorChange: (Color) -> Unit,
+    onProgressIncrement: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ProgressTitle(name = name)
+            ControlsSection(
+                isIndeterminate = isIndeterminate,
+                trackColor = trackColor,
+                progressColor = progressColor,
+                onIndeterminateChange = onIndeterminateChange,
+                onTrackColorChange = onTrackColorChange,
+                onProgressColorChange = onProgressColorChange
+            )
+            ProgressControls(
+                isIndeterminate = isIndeterminate,
+                onProgressIncrement = onProgressIncrement
+            )
+            ProgressIndicatorSection(
+                isIndeterminate = isIndeterminate,
+                progress = progress,
+                trackColor = trackColor,
+                progressColor = progressColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProgressTitle(name: String) {
+    Text(
+        text = "$name Example",
+        style = MaterialTheme.typography.headlineSmall,
+        modifier = Modifier.padding(bottom = 16.dp)
+    )
+}
+
+@Composable
+private fun ControlsSection(
+    isIndeterminate: Boolean,
+    trackColor: Color,
+    progressColor: Color,
+    onIndeterminateChange: (Boolean) -> Unit,
+    onTrackColorChange: (Color) -> Unit,
+    onProgressColorChange: (Color) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        InteractiveSwitch(
+            label = "Indeterminate",
+            checked = isIndeterminate,
+            onCheckedChange = onIndeterminateChange
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ColorPickers(
+            trackColor = trackColor,
+            progressColor = progressColor,
+            onTrackColorChange = onTrackColorChange,
+            onProgressColorChange = onProgressColorChange
+        )
+    }
+}
+
+@Composable
+private fun ColorPickers(
+    trackColor: Color,
+    progressColor: Color,
+    onTrackColorChange: (Color) -> Unit,
+    onProgressColorChange: (Color) -> Unit
+) {
+    Column {
+        InteractiveColorPicker(
+            label = "Track Color",
+            selectedColor = trackColor,
+            onColorSelected = onTrackColorChange
+        )
+        InteractiveColorPicker(
+            label = "Progress Color",
+            selectedColor = progressColor,
+            onColorSelected = onProgressColorChange
+        )
+    }
+}
+
+@Composable
+private fun ProgressControls(
+    isIndeterminate: Boolean,
+    onProgressIncrement: () -> Unit
+) {
+    if (!isIndeterminate) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            InteractiveButton(
+                text = "Simulate Progress",
+                onClick = onProgressIncrement,
+                backgroundColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun ProgressIndicatorSection(
+    isIndeterminate: Boolean,
+    progress: Float,
+    trackColor: Color,
+    progressColor: Color
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(30.dp))
+        LinearProgressComponent(
+            isIndeterminate = isIndeterminate,
+            progress = progress,
+            trackColor = trackColor,
+            progressColor = progressColor
+        )
+        if (!isIndeterminate) {
+            ProgressText(progress = progress)
+        }
+    }
+}
+
+@Composable
+private fun LinearProgressComponent(
+    isIndeterminate: Boolean,
+    progress: Float,
+    trackColor: Color,
+    progressColor: Color
+) {
+    if (isIndeterminate) {
+        LinearProgressIndicator(
+            modifier = Modifier.fillMaxWidth().height(8.dp),
+            color = progressColor,
+            trackColor = trackColor,
+            gapSize = 4.dp,
+            strokeCap = StrokeCap.Square
+        )
+    } else {
+        LinearProgressIndicator(
+            modifier = Modifier.fillMaxWidth().height(8.dp),
+            color = progressColor,
+            trackColor = trackColor,
+            progress = { progress },
+            gapSize = 1.dp,
+            strokeCap = StrokeCap.Round
+        )
+    }
+}
+
+@Composable
+private fun ProgressText(progress: Float) {
+    Text(
+        text = "Progress: ${(progress * 100).toInt()}%",
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier.padding(top = 8.dp)
     )
 }

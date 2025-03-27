@@ -36,77 +36,134 @@ fun AnimatedVisibility(navController: NavController, name: String) {
     var isVisible by remember { mutableStateOf(true) }
     var animationType by remember { mutableStateOf("Fade") }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            CustomTopAppBar(title = name, navController = navController)
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(32.dp))
-                InteractiveRadioButtonGroup(
-                    options = listOf(
-                        "Fade",
-                        "Slide Horizontal",
-                        "Slide Vertical",
-                        "Scale",
-                        "Expand/Shrink",
-                        "Custom Transition"
-                    ),
-                    selectedOption = animationType,
-                    onOptionSelected = { animationType = it }
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(onClick = { isVisible = !isVisible }) {
-                    Text(text = if (isVisible) "Hide Content" else "Show Content")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    when (animationType) {
-                        "fade" -> FadeAnimation(isVisible)
-                        "slidehorizontal" -> SlideHorizontalAnimation(isVisible)
-                        "slidevertical" -> SlideVerticalAnimation(isVisible)
-                        "scale" -> ScaleAnimation(isVisible)
-                        "expand/shrink" -> ExpandShrinkAnimation(isVisible)
-                        "customtransition" -> CustomTransitionAnimation(isVisible)
-                    }
-                }
-            }
-        }
+    AnimatedVisibilityScreen(
+        navController = navController,
+        name = name,
+        isVisible = isVisible,
+        animationType = animationType,
+        onVisibilityChange = { isVisible = it },
+        onAnimationTypeChange = { animationType = it }
     )
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
+private fun AnimatedVisibilityScreen(
+    navController: NavController,
+    name: String,
+    isVisible: Boolean,
+    animationType: String,
+    onVisibilityChange: (Boolean) -> Unit,
+    onAnimationTypeChange: (String) -> Unit
+) {
+    Scaffold(
+        topBar = { CustomTopAppBar(title = name, navController = navController) },
+        content = { paddingValues ->
+            MainContent(
+                paddingValues = paddingValues,
+                isVisible = isVisible,
+                animationType = animationType,
+                onVisibilityChange = onVisibilityChange,
+                onAnimationTypeChange = onAnimationTypeChange
+            )
+        }
+    )
+}
+
+@Composable
+private fun MainContent(
+    paddingValues: PaddingValues,
+    isVisible: Boolean,
+    animationType: String,
+    onVisibilityChange: (Boolean) -> Unit,
+    onAnimationTypeChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AnimationControls(
+            animationType = animationType,
+            isVisible = isVisible,
+            onAnimationTypeChange = onAnimationTypeChange,
+            onVisibilityChange = onVisibilityChange
+        )
+        AnimationContainer(animationType = animationType, isVisible = isVisible)
+    }
+}
+
+@Composable
+private fun AnimationControls(
+    animationType: String,
+    isVisible: Boolean,
+    onAnimationTypeChange: (String) -> Unit,
+    onVisibilityChange: (Boolean) -> Unit
+) {
+    Spacer(modifier = Modifier.height(32.dp))
+    AnimationTypeSelector(
+        selectedType = animationType,
+        onTypeSelected = onAnimationTypeChange
+    )
+    Spacer(modifier = Modifier.height(24.dp))
+    VisibilityToggleButton(isVisible = isVisible, onToggle = onVisibilityChange)
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@Composable
+private fun AnimationTypeSelector(
+    selectedType: String,
+    onTypeSelected: (String) -> Unit
+) {
+    InteractiveRadioButtonGroup(
+        options = listOf(
+            "Fade",
+            "Slide Horizontal",
+            "Slide Vertical",
+            "Scale",
+            "Expand/Shrink",
+            "Custom Transition"
+        ),
+        selectedOption = selectedType,
+        onOptionSelected = onTypeSelected
+    )
+}
+
+@Composable
+private fun VisibilityToggleButton(isVisible: Boolean, onToggle: (Boolean) -> Unit) {
+    Button(onClick = { onToggle(!isVisible) }) {
+        Text(text = if (isVisible) "Hide Content" else "Show Content")
+    }
+}
+
+@Composable
+private fun AnimationContainer(animationType: String, isVisible: Boolean) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        when (animationType) {
+            "Fade" -> FadeAnimation(isVisible)
+            "Slide Horizontal" -> SlideHorizontalAnimation(isVisible)
+            "Slide Vertical" -> SlideVerticalAnimation(isVisible)
+            "Scale" -> ScaleAnimation(isVisible)
+            "Expand/Shrink" -> ExpandShrinkAnimation(isVisible)
+            "Custom Transition" -> CustomTransitionAnimation(isVisible)
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalAnimationApi::class)
 private fun FadeAnimation(isVisible: Boolean) {
     AnimatedVisibility(
         visible = isVisible,
         enter = fadeIn(animationSpec = tween(500)),
         exit = fadeOut(animationSpec = tween(500))
     ) {
-        Column(
-            modifier = Modifier.size(200.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.droidcon),
-                contentDescription = "Sample Image",
-                modifier = Modifier.size(100.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Fade Animation", style = MaterialTheme.typography.bodyLarge)
-        }
+        ContentWithImage(title = "Fade Animation")
     }
 }
 
@@ -115,18 +172,10 @@ private fun FadeAnimation(isVisible: Boolean) {
 private fun SlideHorizontalAnimation(isVisible: Boolean) {
     AnimatedVisibility(
         visible = isVisible,
-        enter = slideInHorizontally(animationSpec = tween(500)) { fullWidth -> -fullWidth },
-        exit = slideOutHorizontally(animationSpec = tween(500)) { fullWidth -> fullWidth }
+        enter = slideInHorizontally(animationSpec = tween(1500)) { -it },
+        exit = slideOutHorizontally(animationSpec = tween(1500)) { it }
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = R.drawable.droidcon),
-                contentDescription = "Sample Image",
-                modifier = Modifier.size(100.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Slide Horizontal", style = MaterialTheme.typography.bodyLarge)
-        }
+        ContentWithImage(title = "Slide Horizontal")
     }
 }
 
@@ -135,18 +184,10 @@ private fun SlideHorizontalAnimation(isVisible: Boolean) {
 private fun SlideVerticalAnimation(isVisible: Boolean) {
     AnimatedVisibility(
         visible = isVisible,
-        enter = slideInVertically(animationSpec = tween(500)) { fullHeight -> -fullHeight },
-        exit = slideOutVertically(animationSpec = tween(500)) { fullHeight -> fullHeight }
+        enter = slideInVertically(animationSpec = tween(1500)) { -it },
+        exit = slideOutVertically(animationSpec = tween(1500)) { it }
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = R.drawable.droidcon),
-                contentDescription = "Sample Image",
-                modifier = Modifier.size(100.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Slide Vertical", style = MaterialTheme.typography.bodyLarge)
-        }
+        ContentWithImage(title = "Slide Vertical")
     }
 }
 
@@ -155,18 +196,10 @@ private fun SlideVerticalAnimation(isVisible: Boolean) {
 private fun ScaleAnimation(isVisible: Boolean) {
     AnimatedVisibility(
         visible = isVisible,
-        enter = scaleIn(animationSpec = tween(500), initialScale = 0.5f),
-        exit = scaleOut(animationSpec = tween(500), targetScale = 0.5f)
+        enter = scaleIn(animationSpec = tween(1500), initialScale = 0.5f),
+        exit = scaleOut(animationSpec = tween(1500), targetScale = 0.5f)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = R.drawable.droidcon),
-                contentDescription = "Sample Image",
-                modifier = Modifier.size(100.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Scale Animation", style = MaterialTheme.typography.bodyLarge)
-        }
+        ContentWithImage(title = "Scale Animation")
     }
 }
 
@@ -176,23 +209,15 @@ private fun ExpandShrinkAnimation(isVisible: Boolean) {
     AnimatedVisibility(
         visible = isVisible,
         enter = expandIn(
-            animationSpec = tween(500),
+            animationSpec = tween(1500),
             expandFrom = Alignment.Center
         ),
         exit = shrinkOut(
-            animationSpec = tween(500),
+            animationSpec = tween(1500),
             shrinkTowards = Alignment.Center
         )
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = R.drawable.droidcon),
-                contentDescription = "Sample Image",
-                modifier = Modifier.size(100.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Expand/Shrink", style = MaterialTheme.typography.bodyLarge)
-        }
+        ContentWithImage(title = "Expand/Shrink")
     }
 }
 
@@ -201,17 +226,28 @@ private fun ExpandShrinkAnimation(isVisible: Boolean) {
 private fun CustomTransitionAnimation(isVisible: Boolean) {
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn(animationSpec = tween(500)) + slideInVertically(animationSpec = tween(500)) { fullHeight -> -fullHeight },
-        exit = fadeOut(animationSpec = tween(500)) + scaleOut(animationSpec = tween(500), targetScale = 0.5f)
+        enter = fadeIn(animationSpec = tween(1500)) +
+                slideInVertically(animationSpec = tween(1500)) { -it },
+        exit = fadeOut(animationSpec = tween(1500)) +
+                scaleOut(animationSpec = tween(1500), targetScale = 0.5f)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = R.drawable.droidcon),
-                contentDescription = "Sample Image",
-                modifier = Modifier.size(100.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Custom Transition", style = MaterialTheme.typography.bodyLarge)
-        }
+        ContentWithImage(title = "Custom Transition")
     }
 }
+
+@Composable
+private fun ContentWithImage(title: String) {
+    Column(
+        modifier = Modifier.size(200.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.droidcon),
+            contentDescription = "Sample Image",
+            modifier = Modifier.size(100.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = title, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+

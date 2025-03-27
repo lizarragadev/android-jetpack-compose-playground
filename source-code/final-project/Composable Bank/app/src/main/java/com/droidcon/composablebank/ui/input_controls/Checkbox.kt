@@ -1,7 +1,9 @@
 package com.droidcon.composablebank.ui.input_controls
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,17 +36,15 @@ import androidx.compose.runtime.mutableStateListOf
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Checkboxes(navController: NavController, name: String) {
-    var showSnackbar by remember { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    var checkboxType by remember { mutableStateOf("single") }
+    var checkboxType by remember { mutableStateOf("Single") }
     var checkboxColor by remember { mutableStateOf(Color.Blue) }
     var isEnabled by remember { mutableStateOf(true) }
-    var alignment by remember { mutableStateOf("vertical") }
+    var alignment by remember { mutableStateOf("Vertical") }
+    var showSnackbar by remember { mutableStateOf(false) }
 
+    val snackbarHostState = remember { SnackbarHostState() }
     val items = listOf("Option 1", "Option 2", "Option 3", "Option 4")
-
-    var selectedItems = remember { mutableStateListOf(false, false, false, false) }
+    val selectedItems = remember { mutableStateListOf(false, false, false, false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -58,52 +58,32 @@ fun Checkboxes(navController: NavController, name: String) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp)
-                ) {
-                    InteractiveRadioButtonGroup(
-                        options = listOf("Single", "Group", "Select All"),
-                        selectedOption = checkboxType,
-                        onOptionSelected = { checkboxType = it.lowercase() }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveSwitch(
-                        label = "Enabled",
-                        checked = isEnabled,
-                        onCheckedChange = { isEnabled = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveColorPicker(
-                        label = "Checkbox Color",
-                        selectedColor = checkboxColor,
-                        onColorSelected = { checkboxColor = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveRadioButtonGroup(
-                        options = listOf("Horizontal", "Vertical"),
-                        selectedOption = alignment,
-                        onOptionSelected = { alignment = it.lowercase() }
-                    )
-                }
+                CheckboxSettingsPanel(
+                    checkboxType = checkboxType,
+                    isEnabled = isEnabled,
+                    checkboxColor = checkboxColor,
+                    alignment = alignment,
+                    onTypeChange = { checkboxType = it },
+                    onColorChange = { checkboxColor = it },
+                    onEnabledChange = { isEnabled = it },
+                    onAlignmentChange = { alignment = it }
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                when (checkboxType.lowercase()) {
-                    "single" -> SingleCheckboxExample(
+                when (checkboxType) {
+                    "Single" -> SingleCheckboxExample(
                         color = checkboxColor,
                         enabled = isEnabled
                     )
-                    "group" -> GroupCheckboxExample(
+                    "Group" -> GroupCheckboxExample(
                         items = items,
                         selectedItems = selectedItems,
                         alignment = alignment,
                         color = checkboxColor,
                         enabled = isEnabled
                     )
-                    "selectall" -> SelectAllCheckboxExample(
+                    "Select All" -> SelectAllCheckboxExample(
                         items = items,
                         selectedItems = selectedItems,
                         alignment = alignment,
@@ -111,8 +91,6 @@ fun Checkboxes(navController: NavController, name: String) {
                         enabled = isEnabled
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     )
@@ -126,32 +104,62 @@ fun Checkboxes(navController: NavController, name: String) {
 }
 
 @Composable
+private fun CheckboxSettingsPanel(
+    checkboxType: String,
+    isEnabled: Boolean,
+    checkboxColor: Color,
+    alignment: String,
+    onTypeChange: (String) -> Unit,
+    onColorChange: (Color) -> Unit,
+    onEnabledChange: (Boolean) -> Unit,
+    onAlignmentChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
+    ) {
+        InteractiveRadioButtonGroup(
+            options = listOf("Single", "Group", "Select All"),
+            selectedOption = checkboxType,
+            onOptionSelected = onTypeChange
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        InteractiveSwitch(
+            label = "Enabled",
+            checked = isEnabled,
+            onCheckedChange = onEnabledChange
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        InteractiveColorPicker(
+            label = "Checkbox Color",
+            selectedColor = checkboxColor,
+            onColorSelected = onColorChange
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        InteractiveRadioButtonGroup(
+            options = listOf("Horizontal", "Vertical"),
+            selectedOption = alignment,
+            onOptionSelected = onAlignmentChange
+        )
+    }
+}
+
+@Composable
 private fun SingleCheckboxExample(
     color: Color,
     enabled: Boolean
 ) {
     var isChecked by remember { mutableStateOf(false) }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(0.8f)
-    ) {
-        Checkbox(
-            checked = isChecked,
-            onCheckedChange = { isChecked = it },
-            enabled = enabled,
-            colors = CheckboxDefaults.colors(
-                checkedColor = color,
-                uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                checkmarkColor = MaterialTheme.colorScheme.onPrimary
-            )
-        )
-        Text(
-            text = if (isChecked) "Checked" else "Unchecked",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 8.dp)
-        )
-    }
+    CheckboxWithLabel(
+        label = if (isChecked) "Checked" else "Unchecked",
+        checked = isChecked,
+        onCheckedChange = { isChecked = it },
+        color = color,
+        enabled = enabled
+    )
 }
 
 @Composable
@@ -162,42 +170,44 @@ private fun GroupCheckboxExample(
     color: Color,
     enabled: Boolean
 ) {
-    val isHorizontal = alignment == "horizontal"
+    val isHorizontal = alignment == "Horizontal"
+    val scrollState = rememberScrollState()
 
-    if (isHorizontal) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            items.forEachIndexed { index, item ->
-                SingleCheckboxWithLabel(
-                    label = item,
-                    isChecked = selectedItems[index],
-                    onCheckedChange = { newValue ->
-                        selectedItems[index] = newValue
-                    },
-                    color = color,
-                    enabled = enabled
-                )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth(if (isHorizontal) 1f else 0.8f)
+    ) {
+        if (isHorizontal) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .horizontalScroll(scrollState)
+                    .padding(horizontal = 16.dp)
+            ) {
+                items.forEachIndexed { index, item ->
+                    CheckboxWithLabel(
+                        label = item,
+                        checked = selectedItems[index],
+                        onCheckedChange = { selectedItems[index] = it },
+                        color = color,
+                        enabled = enabled
+                    )
+                }
             }
-        }
-    } else {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.Start,
-            modifier = Modifier.fillMaxWidth(0.8f)
-        ) {
-            items.forEachIndexed { index, item ->
-                SingleCheckboxWithLabel(
-                    label = item,
-                    isChecked = selectedItems[index],
-                    onCheckedChange = { newValue ->
-                        selectedItems[index] = newValue
-                    },
-                    color = color,
-                    enabled = enabled
-                )
+        } else {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(16.dp)
+            ) {
+                items.forEachIndexed { index, item ->
+                    CheckboxWithLabel(
+                        label = item,
+                        checked = selectedItems[index],
+                        onCheckedChange = { selectedItems[index] = it },
+                        color = color,
+                        enabled = enabled
+                    )
+                }
             }
         }
     }
@@ -211,66 +221,38 @@ private fun SelectAllCheckboxExample(
     color: Color,
     enabled: Boolean
 ) {
-    var isAllChecked by remember { mutableStateOf(false) }
-
-    LaunchedEffect(isAllChecked) {
-        selectedItems.indices.forEach { index ->
-            selectedItems[index] = isAllChecked
-        }
-    }
+    val allChecked = selectedItems.all { it }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.Start,
-        modifier = Modifier.fillMaxWidth(0.8f)
+        modifier = Modifier.fillMaxWidth(0.8f),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 0.dp)
-        ) {
-            Checkbox(
-                checked = isAllChecked,
-                onCheckedChange = { newValue ->
-                    isAllChecked = newValue
-                },
-                enabled = enabled,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = color,
-                    uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    checkmarkColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-            Text(
-                text = "Select All",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(start = 8.dp)
-            )
-        }
+        CheckboxWithLabel(
+            label = "Select All",
+            checked = allChecked,
+            onCheckedChange = { checked ->
+                selectedItems.indices.forEach { index ->
+                    selectedItems[index] = checked
+                }
+            },
+            color = color,
+            enabled = enabled
+        )
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(3.dp),
-            horizontalAlignment = Alignment.Start,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 32.dp)
-        ) {
-            GroupCheckboxExample(
-                items = items,
-                selectedItems = selectedItems,
-                alignment = alignment,
-                color = color,
-                enabled = enabled
-            )
-        }
+        GroupCheckboxExample(
+            items = items,
+            selectedItems = selectedItems,
+            alignment = alignment,
+            color = color,
+            enabled = enabled
+        )
     }
 }
 
 @Composable
-private fun SingleCheckboxWithLabel(
+private fun CheckboxWithLabel(
     label: String,
-    isChecked: Boolean,
+    checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     color: Color,
     enabled: Boolean
@@ -280,7 +262,7 @@ private fun SingleCheckboxWithLabel(
         modifier = Modifier.fillMaxWidth()
     ) {
         Checkbox(
-            checked = isChecked,
+            checked = checked,
             onCheckedChange = onCheckedChange,
             enabled = enabled,
             colors = CheckboxDefaults.colors(

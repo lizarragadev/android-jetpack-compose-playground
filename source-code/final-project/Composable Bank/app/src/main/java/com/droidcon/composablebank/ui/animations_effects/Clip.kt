@@ -27,97 +27,169 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import com.droidcon.composablebank.components.InteractiveRadioButtonGroup
 import com.droidcon.composablebank.components.InteractiveSwitch
 import com.droidcon.composablebank.R
 
 @Composable
 fun Clip(navController: NavController, name: String) {
-    var clipShape by remember { mutableStateOf("circle") }
+    var clipShape by remember { mutableStateOf("Circle") }
     var cornerRadius by remember { mutableStateOf(16.dp) }
     var showOriginal by remember { mutableStateOf(false) }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            CustomTopAppBar(title = name, navController = navController)
-        },
+        topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(32.dp))
-                InteractiveRadioButtonGroup(
-                    options = listOf("Circle", "Rounded Rectangle", "Custom Shape"),
-                    selectedOption = clipShape,
-                    onOptionSelected = { clipShape = it.lowercase() }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (clipShape == "rounded rectangle") {
-                    Text(
-                        text = "Corner Radius: ${cornerRadius.value.toInt()} dp",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                    Slider(
-                        value = cornerRadius.value,
-                        onValueChange = { cornerRadius = it.dp },
-                        valueRange = 0f..50f,
-                        steps = 50
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                InteractiveSwitch(
-                    label = "Show Original Image",
-                    checked = showOriginal,
-                    onCheckedChange = { showOriginal = it }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(200.dp)
-                        .background(Color.DarkGray)
-                        .padding(16.dp)
-                        .then(
-                            if (!showOriginal) {
-                                when (clipShape) {
-                                    "circle" -> Modifier.clip(CircleShape)
-                                    "roundedrectangle" -> Modifier.clip(RoundedCornerShape(cornerRadius))
-                                    else -> Modifier.clip(TriangleShape)
-                                }
-                            } else {
-                                Modifier
-                            }
-                        )
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.droidcon),
-                        contentDescription = "Sample Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(onClick = {
-                    clipShape = "circle"
+            MainContent(
+                paddingValues = paddingValues,
+                clipShape = clipShape,
+                cornerRadius = cornerRadius,
+                showOriginal = showOriginal,
+                onShapeChange = { clipShape = it },
+                onRadiusChange = { cornerRadius = it },
+                onToggleOriginal = { showOriginal = it },
+                onReset = {
+                    clipShape = "Circle"
                     cornerRadius = 16.dp
                     showOriginal = false
-                }) {
-                    Text("Reset Clip")
                 }
-            }
+            )
         }
     )
+}
+
+@Composable
+private fun MainContent(
+    paddingValues: PaddingValues,
+    clipShape: String,
+    cornerRadius: Dp,
+    showOriginal: Boolean,
+    onShapeChange: (String) -> Unit,
+    onRadiusChange: (Dp) -> Unit,
+    onToggleOriginal: (Boolean) -> Unit,
+    onReset: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(Modifier.height(32.dp))
+
+        ShapeSelector(
+            currentShape = clipShape,
+            onShapeSelected = onShapeChange
+        )
+
+        CornerRadiusControl(
+            currentShape = clipShape,
+            currentRadius = cornerRadius,
+            onRadiusChanged = onRadiusChange
+        )
+
+        OriginalImageToggle(
+            showOriginal = showOriginal,
+            onToggle = onToggleOriginal
+        )
+
+        ImageContainer(
+            clipShape = clipShape,
+            cornerRadius = cornerRadius,
+            showOriginal = showOriginal
+        )
+
+        ResetButton(onReset = onReset)
+    }
+}
+
+@Composable
+private fun ShapeSelector(currentShape: String, onShapeSelected: (String) -> Unit) {
+    InteractiveRadioButtonGroup(
+        options = listOf("Circle", "Rounded Rectangle", "Custom Shape"),
+        selectedOption = currentShape.replaceFirstChar { it.titlecase() },
+        onOptionSelected = { onShapeSelected(it) }
+    )
+    Spacer(Modifier.height(16.dp))
+}
+
+@Composable
+private fun CornerRadiusControl(
+    currentShape: String,
+    currentRadius: Dp,
+    onRadiusChanged: (Dp) -> Unit
+) {
+    if (currentShape == "Rounded Rectangle") {
+        Text(
+            text = "Corner Radius: ${currentRadius.value.toInt()} dp",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        Slider(
+            value = currentRadius.value,
+            onValueChange = { onRadiusChanged(it.dp) },
+            valueRange = 0f..50f,
+            steps = 50
+        )
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun OriginalImageToggle(showOriginal: Boolean, onToggle: (Boolean) -> Unit) {
+    InteractiveSwitch(
+        label = "Show Original Image",
+        checked = showOriginal,
+        onCheckedChange = onToggle
+    )
+    Spacer(Modifier.height(16.dp))
+}
+
+@Composable
+private fun ImageContainer(clipShape: String, cornerRadius: Dp, showOriginal: Boolean) {
+    Box(
+        modifier = Modifier
+            .size(200.dp)
+            .background(Color.DarkGray)
+            .padding(16.dp)
+            .conditionalClip(
+                condition = !showOriginal,
+                shapeType = clipShape,
+                radius = cornerRadius
+            )
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.droidcon),
+            contentDescription = "Sample Image",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+    }
+}
+
+@Composable
+private fun ResetButton(onReset: () -> Unit) {
+    Button(
+        onClick = onReset,
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Text("Reset Clip")
+    }
+}
+
+private fun Modifier.conditionalClip(condition: Boolean, shapeType: String, radius: Dp): Modifier {
+    return if (condition) {
+        when (shapeType) {
+            "Circle" -> clip(CircleShape)
+            "Rounded Rectangle" -> clip(RoundedCornerShape(radius))
+            else -> clip(TriangleShape)
+        }
+    } else {
+        this
+    }
 }
 
 private val TriangleShape = GenericShape { size, _ ->

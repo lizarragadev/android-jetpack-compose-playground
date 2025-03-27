@@ -14,15 +14,24 @@ import com.droidcon.composablebank.utils.Constants
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavGraph(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Constants.HOME_ROUTE) {
-        composable(Constants.HOME_ROUTE) { HomeScreen(navController) }
+    NavHost(
+        navController = navController,
+        startDestination = Constants.HOME_ROUTE
+    ) {
+        composable(Constants.HOME_ROUTE) {
+            HomeScreen(navController)
+        }
         composable(Constants.DETAIL_ROUTE) { backStackEntry ->
-            val composableName = backStackEntry.arguments?.getString("composableName")
-            ComposableDetailScreen(composableName, navController)
+            ComposableDetailScreen(
+                composableName = backStackEntry.arguments?.getString("composableName"),
+                navController = navController
+            )
         }
         composable(Constants.DEMO_ROUTE) { backStackEntry ->
-            val composableName = backStackEntry.arguments?.getString("composableName")
-            DemoContainer(composableName, navController)
+            DemoContainer(
+                composableName = backStackEntry.arguments?.getString("composableName"),
+                navController = navController
+            )
         }
     }
 }

@@ -2,6 +2,7 @@ package com.droidcon.composablebank.ui.input_controls
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,151 +51,155 @@ fun Switches(navController: NavController, name: String) {
         modifier = Modifier.fillMaxSize(),
         topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp)
-                ) {
-                    InteractiveRadioButtonGroup(
-                        options = listOf("Normal", "Check/Cross", "Day/Night", "On/Off"),
-                        selectedOption = switchType.lowercase(),
-                        onOptionSelected = { switchType = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveSwitch(
-                        label = "Enabled",
-                        checked = isEnabled,
-                        onCheckedChange = { isEnabled = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveColorPicker(
-                        label = "Switch Color",
-                        selectedColor = switchColor,
-                        onColorSelected = { switchColor = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveSlider(
-                        label = "Thumb Size",
-                        value = thumbSize.value,
-                        onValueChange = { thumbSize = it.dp },
-                        valueRange = 10f..30f,
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                when (switchType) {
-                    "Normal".lowercase() -> BasicSwitchExample(
-                        checked = checkedState,
-                        onCheckedChange = { checkedState = it },
-                        color = switchColor,
-                        thumbSize = thumbSize,
-                        enabled = isEnabled
-                    )
-                    "Check/Cross".lowercase() -> CheckCrossSwitchExample(
-                        checked = checkedState,
-                        onCheckedChange = { checkedState = it },
-                        color = switchColor,
-                        enabled = isEnabled
-                    )
-                    "Day/Night".lowercase() -> DayNightSwitchExample(
-                        checked = checkedState,
-                        onCheckedChange = { checkedState = it },
-                        color = switchColor,
-                        enabled = isEnabled
-                    )
-                    "On/Off".lowercase() -> OnOffSwitchExample(
-                        checked = checkedState,
-                        onCheckedChange = { checkedState = it },
-                        color = switchColor,
-                        enabled = isEnabled
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+            MainContent(
+                paddingValues = paddingValues,
+                switchType = switchType,
+                switchColor = switchColor,
+                thumbSize = thumbSize,
+                isEnabled = isEnabled,
+                checkedState = checkedState,
+                onTypeChange = { switchType = it },
+                onColorChange = { switchColor = it },
+                onThumbSizeChange = { thumbSize = it },
+                onEnabledChange = { isEnabled = it },
+                onCheckedChange = { checkedState = it }
+            )
         }
     )
 }
 
 @Composable
-private fun BasicSwitchExample(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    color: Color,
+private fun MainContent(
+    paddingValues: PaddingValues,
+    switchType: String,
+    switchColor: Color,
     thumbSize: Dp,
-    enabled: Boolean
+    isEnabled: Boolean,
+    checkedState: Boolean,
+    onTypeChange: (String) -> Unit,
+    onColorChange: (Color) -> Unit,
+    onThumbSizeChange: (Dp) -> Unit,
+    onEnabledChange: (Boolean) -> Unit,
+    onCheckedChange: (Boolean) -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(0.8f)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Normal Switch",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
+        ConfigurationPanel(
+            switchType = switchType,
+            isEnabled = isEnabled,
+            switchColor = switchColor,
+            thumbSize = thumbSize,
+            onTypeChange = onTypeChange,
+            onEnabledChange = onEnabledChange,
+            onColorChange = onColorChange,
+            onThumbSizeChange = onThumbSizeChange
         )
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            enabled = enabled,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = color,
-                checkedTrackColor = color.copy(alpha = 0.3f),
-            ),
-            thumbContent = {
-                if (checked) {
-                    Icon(
-                        imageVector = Icons.Default.Done,
-                        contentDescription = "Active",
-                        tint = Color.White,
-                        modifier = Modifier.size(thumbSize)
-                    )
-                }
-            },
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        SwitchDisplay(
+            switchType = switchType,
+            checkedState = checkedState,
+            switchColor = switchColor,
+            thumbSize = thumbSize,
+            isEnabled = isEnabled,
+            onCheckedChange = onCheckedChange
         )
     }
 }
 
 @Composable
-private fun CheckCrossSwitchExample(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    color: Color,
-    enabled: Boolean
+private fun ConfigurationPanel(
+    switchType: String,
+    isEnabled: Boolean,
+    switchColor: Color,
+    thumbSize: Dp,
+    onTypeChange: (String) -> Unit,
+    onEnabledChange: (Boolean) -> Unit,
+    onColorChange: (Color) -> Unit,
+    onThumbSizeChange: (Dp) -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(0.8f)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
     ) {
-        Text(
-            text = "Check/Cross",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
+        InteractiveRadioButtonGroup(
+            options = listOf("Normal", "Check/Cross", "Day/Night", "On/Off"),
+            selectedOption = switchType,
+            onOptionSelected = onTypeChange
         )
+
+        SwitchConfigItem("Enabled", isEnabled, onEnabledChange)
+        ColorConfigItem(switchColor, onColorChange)
+        ThumbSizeConfigItem(thumbSize, onThumbSizeChange)
+    }
+}
+
+@Composable
+private fun SwitchDisplay(
+    switchType: String,
+    checkedState: Boolean,
+    switchColor: Color,
+    thumbSize: Dp,
+    isEnabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    when (switchType) {
+        "Normal" -> BasicSwitch(
+            checked = checkedState,
+            color = switchColor,
+            thumbSize = thumbSize,
+            enabled = isEnabled,
+            onCheckedChange = onCheckedChange
+        )
+        "Check/Cross" -> CheckCrossSwitch(
+            checked = checkedState,
+            color = switchColor,
+            enabled = isEnabled,
+            onCheckedChange = onCheckedChange
+        )
+        "Day/Night" -> DayNightSwitch(
+            checked = checkedState,
+            color = switchColor,
+            enabled = isEnabled,
+            onCheckedChange = onCheckedChange
+        )
+        "On/Off" -> OnOffSwitch(
+            checked = checkedState,
+            color = switchColor,
+            enabled = isEnabled,
+            onCheckedChange = onCheckedChange
+        )
+    }
+}
+
+@Composable
+private fun BasicSwitch(
+    checked: Boolean,
+    color: Color,
+    thumbSize: Dp,
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    SwitchRow(label = "Normal Switch") {
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
             enabled = enabled,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = color,
-                checkedTrackColor = color.copy(alpha = 0.3f),
-                uncheckedThumbColor = Color.Red,
-                uncheckedTrackColor = Color.Red.copy(alpha = 0.3f)
-            ),
+            colors = switchColors(color),
             thumbContent = {
-                Icon(
-                    imageVector = if (checked) Icons.Default.Check else Icons.Default.Close,
-                    contentDescription = if (checked) "Active" else "Inactive",
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
+                if (checked) Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = "Active",
+                    modifier = Modifier.size(thumbSize),
+                    tint = Color.White
                 )
             }
         )
@@ -202,30 +207,50 @@ private fun CheckCrossSwitchExample(
 }
 
 @Composable
-private fun DayNightSwitchExample(
+private fun CheckCrossSwitch(
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
     color: Color,
-    enabled: Boolean
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(0.8f)
-    ) {
-        Text(
-            text = "Day/Night Mode",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
+    SwitchRow(label = "Check/Cross") {
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
             enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = color,
-                checkedTrackColor = color.copy(alpha = 0.3f),
+                checkedTrackColor = color.copy(0.3f),
+                uncheckedThumbColor = Color.Red,
+                uncheckedTrackColor = Color.Red.copy(0.3f)
+            ),
+            thumbContent = {
+                Icon(
+                    imageVector = if (checked) Icons.Default.Check else Icons.Default.Close,
+                    contentDescription = if (checked) "Active" else "Inactive",
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.White
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun DayNightSwitch(
+    checked: Boolean,
+    color: Color,
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    SwitchRow(label = "Day/Night Mode") {
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            colors = switchColors(color).copy(
                 uncheckedThumbColor = Color.Blue,
-                uncheckedTrackColor = Color.Blue.copy(alpha = 0.3f)
+                uncheckedTrackColor = Color.Blue.copy(0.3f)
             ),
             thumbContent = {
                 Icon(
@@ -240,28 +265,18 @@ private fun DayNightSwitchExample(
 }
 
 @Composable
-private fun OnOffSwitchExample(
+private fun OnOffSwitch(
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
     color: Color,
-    enabled: Boolean
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(0.8f)
-    ) {
-        Text(
-            text = "On/Off",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
+    SwitchRow(label = "On/Off") {
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
             enabled = enabled,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = color,
-                checkedTrackColor = color.copy(alpha = 0.3f),
+            colors = switchColors(color).copy(
                 uncheckedThumbColor = Color.DarkGray,
                 uncheckedTrackColor = Color.Gray
             ),
@@ -269,9 +284,62 @@ private fun OnOffSwitchExample(
                 Text(
                     text = if (checked) "ON" else "OFF",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White,
+                    color = Color.White
                 )
             }
+        )
+    }
+}
+
+@Composable
+private fun SwitchRow(
+    label: String,
+    content: @Composable () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth(0.8f)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+        content()
+    }
+}
+
+@Composable
+private fun switchColors(color: Color) = SwitchDefaults.colors(
+    checkedThumbColor = color,
+    checkedTrackColor = color.copy(alpha = 0.3f)
+)
+
+@Composable
+private fun SwitchConfigItem(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Column {
+        Spacer(Modifier.height(8.dp))
+        InteractiveSwitch(label, checked, onCheckedChange)
+    }
+}
+
+@Composable
+private fun ColorConfigItem(color: Color, onColorChange: (Color) -> Unit) {
+    Column {
+        Spacer(Modifier.height(8.dp))
+        InteractiveColorPicker("Switch Color", color, onColorChange)
+    }
+}
+
+@Composable
+private fun ThumbSizeConfigItem(thumbSize: Dp, onThumbSizeChange: (Dp) -> Unit) {
+    Column {
+        Spacer(Modifier.height(8.dp))
+        InteractiveSlider(
+            label = "Thumb Size",
+            value = thumbSize.value,
+            onValueChange = { onThumbSizeChange(it.dp) },
+            valueRange = 10f..30f
         )
     }
 }

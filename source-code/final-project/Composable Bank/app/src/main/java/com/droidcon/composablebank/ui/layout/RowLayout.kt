@@ -22,162 +22,253 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import com.droidcon.composablebank.components.InteractiveSwitch
 import com.droidcon.composablebank.components.InteractiveRadioButtonGroup
 
 @Composable
 fun RowLayout(navController: NavController, name: String) {
-    var horizontalArrangementName by remember { mutableStateOf("start") }
-    var verticalAlignmentName by remember { mutableStateOf("top") }
+    var horizontalArrangementName by remember { mutableStateOf("Start") }
+    var verticalAlignmentName by remember { mutableStateOf("Top") }
     var isScrollable by remember { mutableStateOf(false) }
 
-    val horizontalArrangements = mapOf(
-        "start" to Arrangement.Start,
-        "center" to Arrangement.Center,
-        "end" to Arrangement.End,
-        "spacebetween" to Arrangement.SpaceBetween,
-        "spacearound" to Arrangement.SpaceAround,
-        "spaceevenly" to Arrangement.SpaceEvenly
-    )
+    val horizontalArrangements = remember {
+        mapOf(
+            "Start" to Arrangement.Start,
+            "Center" to Arrangement.Center,
+            "End" to Arrangement.End,
+            "SpaceBetween" to Arrangement.SpaceBetween,
+            "SpaceAround" to Arrangement.SpaceAround,
+            "SpaceEvenly" to Arrangement.SpaceEvenly
+        )
+    }
 
-    val verticalAlignments = mapOf(
-        "top" to Alignment.Top,
-        "center" to Alignment.CenterVertically,
-        "bottom" to Alignment.Bottom
-    )
+    val verticalAlignments = remember {
+        mapOf(
+            "Top" to Alignment.Top,
+            "Center" to Alignment.CenterVertically,
+            "Bottom" to Alignment.Bottom
+        )
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    InteractiveRadioButtonGroup(
-                        options = horizontalArrangements.keys.toList(),
-                        selectedOption = horizontalArrangementName,
-                        onOptionSelected = { selected ->
-                            horizontalArrangementName = selected
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    InteractiveRadioButtonGroup(
-                        options = verticalAlignments.keys.toList(),
-                        selectedOption = verticalAlignmentName,
-                        onOptionSelected = { selected ->
-                            verticalAlignmentName = selected
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .height(250.dp)
-                        .padding(16.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-                        .then(
-                            if (isScrollable) {
-                                Modifier.horizontalScroll(rememberScrollState())
-                            } else {
-                                Modifier
-                            }
-                        ),
-                    horizontalArrangement = horizontalArrangements[horizontalArrangementName] ?: Arrangement.Start,
-                    verticalAlignment = verticalAlignments[verticalAlignmentName] ?: Alignment.Top,
-                ) {
-                    repeat(5) { index ->
-                        Box(
-                            modifier = Modifier
-                                .width(70.dp)
-                                .height(65.dp)
-                                .background(
-                                    color = when (index) {
-                                        0 -> MaterialTheme.colorScheme.primary
-                                        1 -> MaterialTheme.colorScheme.secondary
-                                        2 -> MaterialTheme.colorScheme.tertiary
-                                        3 -> MaterialTheme.colorScheme.error
-                                        4 -> MaterialTheme.colorScheme.primary
-                                        else -> MaterialTheme.colorScheme.surface
-                                    },
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = "Item ${index + 1}",
-                                modifier = Modifier.align(Alignment.Center),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                    }
-                }
-                InteractiveSwitch(
-                    label = "Scrollable Row",
-                    checked = isScrollable,
-                    onCheckedChange = { isScrollable = it }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-                        .then(
-                            if (isScrollable) {
-                                Modifier.horizontalScroll(rememberScrollState())
-                            } else {
-                                Modifier
-                            }
-                        ),
-                ) {
-                    repeat(10) { index ->
-                        Box(
-                            modifier = Modifier
-                                .width(70.dp)
-                                .height(65.dp)
-                                .background(
-                                    color = when (index) {
-                                        0 -> MaterialTheme.colorScheme.primary
-                                        1 -> MaterialTheme.colorScheme.secondary
-                                        2 -> MaterialTheme.colorScheme.tertiary
-                                        3 -> MaterialTheme.colorScheme.error
-                                        4 -> MaterialTheme.colorScheme.primary
-                                        5 -> MaterialTheme.colorScheme.secondary
-                                        6 -> MaterialTheme.colorScheme.tertiary
-                                        7 -> MaterialTheme.colorScheme.error
-                                        8 -> MaterialTheme.colorScheme.primary
-                                        9 -> MaterialTheme.colorScheme.secondary
-                                        else -> MaterialTheme.colorScheme.secondaryContainer
-                                    },
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = "Item ${index + 1}",
-                                modifier = Modifier.align(Alignment.Center),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                    }
-                }
-            }
+            MainContent(
+                paddingValues = paddingValues,
+                horizontalArrangementName = horizontalArrangementName,
+                verticalAlignmentName = verticalAlignmentName,
+                isScrollable = isScrollable,
+                horizontalArrangements = horizontalArrangements,
+                verticalAlignments = verticalAlignments,
+                onHorizontalArrangementChange = { horizontalArrangementName = it },
+                onVerticalAlignmentChange = { verticalAlignmentName = it },
+                onScrollableChange = { isScrollable = it }
+            )
         }
     )
 }
+
+@Composable
+private fun MainContent(
+    paddingValues: PaddingValues,
+    horizontalArrangementName: String,
+    verticalAlignmentName: String,
+    isScrollable: Boolean,
+    horizontalArrangements: Map<String, Arrangement.Horizontal>,
+    verticalAlignments: Map<String, Alignment.Vertical>,
+    onHorizontalArrangementChange: (String) -> Unit,
+    onVerticalAlignmentChange: (String) -> Unit,
+    onScrollableChange: (Boolean) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        RowConfigPanel(
+            horizontalArrangementName = horizontalArrangementName,
+            verticalAlignmentName = verticalAlignmentName,
+            isScrollable = isScrollable,
+            horizontalArrangements = horizontalArrangements.keys.toList(),
+            verticalAlignments = verticalAlignments.keys.toList(),
+            onHorizontalArrangementChange = onHorizontalArrangementChange,
+            onVerticalAlignmentChange = onVerticalAlignmentChange,
+            onScrollableChange = onScrollableChange
+        )
+
+        DemoRow(
+            horizontalArrangement = horizontalArrangements[horizontalArrangementName] ?: Arrangement.Start,
+            verticalAlignment = verticalAlignments[verticalAlignmentName] ?: Alignment.Top,
+            isScrollable = isScrollable,
+            itemCount = 5
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        ScrollableSwitch(
+            isScrollable = isScrollable,
+            onScrollableChange = onScrollableChange
+        )
+
+        DemoRow(
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically,
+            isScrollable = isScrollable,
+            itemCount = 10
+        )
+    }
+}
+
+@Composable
+private fun RowConfigPanel(
+    horizontalArrangementName: String,
+    verticalAlignmentName: String,
+    isScrollable: Boolean,
+    horizontalArrangements: List<String>,
+    verticalAlignments: List<String>,
+    onHorizontalArrangementChange: (String) -> Unit,
+    onVerticalAlignmentChange: (String) -> Unit,
+    onScrollableChange: (Boolean) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .height(300.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ArrangementSelection(
+                options = horizontalArrangements,
+                selectedOption = horizontalArrangementName,
+                label = "Horizontal Arrangement",
+                onOptionSelected = onHorizontalArrangementChange
+            )
+
+            AlignmentSelection(
+                options = verticalAlignments,
+                selectedOption = verticalAlignmentName,
+                label = "Vertical Alignment",
+                onOptionSelected = onVerticalAlignmentChange
+            )
+        }
+    }
+}
+
+@Composable
+private fun ArrangementSelection(
+    options: List<String>,
+    selectedOption: String,
+    label: String,
+    onOptionSelected: (String) -> Unit
+) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        InteractiveRadioButtonGroup(
+            options = options,
+            selectedOption = selectedOption,
+            onOptionSelected = onOptionSelected
+        )
+    }
+}
+
+@Composable
+private fun AlignmentSelection(
+    options: List<String>,
+    selectedOption: String,
+    label: String,
+    onOptionSelected: (String) -> Unit
+) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        InteractiveRadioButtonGroup(
+            options = options,
+            selectedOption = selectedOption,
+            onOptionSelected = onOptionSelected
+        )
+    }
+}
+
+@Composable
+private fun DemoRow(
+    horizontalArrangement: Arrangement.Horizontal,
+    verticalAlignment: Alignment.Vertical,
+    isScrollable: Boolean,
+    itemCount: Int
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+            .horizontalScrollIf(isScrollable),
+        horizontalArrangement = horizontalArrangement,
+        verticalAlignment = verticalAlignment
+    ) {
+        repeat(itemCount) { index ->
+            ColoredBoxItem(index = index)
+        }
+    }
+}
+
+@Composable
+private fun ScrollableSwitch(
+    isScrollable: Boolean,
+    onScrollableChange: (Boolean) -> Unit
+) {
+    InteractiveSwitch(
+        label = "Scrollable Row",
+        checked = isScrollable,
+        onCheckedChange = onScrollableChange
+    )
+}
+
+@Composable
+private fun ColoredBoxItem(index: Int) {
+    Box(
+        modifier = Modifier
+            .width(70.dp)
+            .height(65.dp)
+            .background(
+                color = getColorForIndex(index),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Item ${index + 1}",
+            modifier = Modifier.align(Alignment.Center),
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}
+
+@Composable
+private fun getColorForIndex(index: Int): Color {
+    return when (index % 4) {
+        0 -> MaterialTheme.colorScheme.primary
+        1 -> MaterialTheme.colorScheme.secondary
+        2 -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.error
+    }
+}
+
+@Composable
+private fun Modifier.horizontalScrollIf(enabled: Boolean) =
+    if (enabled) this.horizontalScroll(rememberScrollState()) else this

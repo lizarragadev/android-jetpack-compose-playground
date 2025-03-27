@@ -28,131 +28,182 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.TabletAndroid
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import com.droidcon.composablebank.utils.CustomTopAppBar
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 
 @Composable
 fun WindowSizeClass(navController: NavController, name: String) {
-    val windowSizeClass = calculateWindowSizeClass()
+    val windowSizeClass = rememberWindowSizeClass()
 
-    MaterialTheme(
-        colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme(),
-        content = {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                topBar = {
-                    CustomTopAppBar(title = name, navController = navController)
-                },
-                content = { paddingValues ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                    ) {
-                        when (windowSizeClass.widthSizeClass) {
-                            WindowWidthSizeClass.Compact -> CompactLayout()
-                            WindowWidthSizeClass.Medium -> MediumLayout()
-                            WindowWidthSizeClass.Expanded -> ExpandedLayout()
-                        }
-                    }
-                }
+    MaterialTheme(colorScheme = dynamicColorScheme()) {
+        WindowSizeScaffold(
+            title = name,
+            navController = navController,
+            windowSizeClass = windowSizeClass
+        )
+    }
+}
+
+@Composable
+private fun WindowSizeScaffold(
+    title: String,
+    navController: NavController,
+    windowSizeClass: WindowSizeClass
+) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = { CustomTopAppBar(title = title, navController = navController) },
+        content = { padding ->
+            AdaptiveLayoutContainer(
+                padding = padding,
+                windowSizeClass = windowSizeClass
             )
         }
     )
 }
 
-@SuppressLint("ContextCastToActivity")
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-private fun calculateWindowSizeClass(): WindowSizeClass {
-    val activity = LocalContext.current as Activity
-    return calculateWindowSizeClass(activity)
+private fun AdaptiveLayoutContainer(
+    padding: PaddingValues,
+    windowSizeClass: WindowSizeClass
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)
+    ) {
+        when (windowSizeClass.widthSizeClass) {
+            WindowWidthSizeClass.Compact -> CompactLayout()
+            WindowWidthSizeClass.Medium -> MediumLayout()
+            WindowWidthSizeClass.Expanded -> ExpandedLayout()
+        }
+    }
 }
 
 @Composable
 private fun CompactLayout() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Red.copy(alpha = 0.5f))
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Compact Layout",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color.White
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Suitable for small phones.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.White
+    LayoutContainer(backgroundColor = Color.Red) {
+        ColumnLayout(
+            title = "Compact Layout",
+            description = "Suitable for small phones."
         )
     }
 }
 
 @Composable
 private fun MediumLayout() {
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Green.copy(alpha = 0.5f))
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "Medium Layout",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Suitable for tablets or medium devices.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White
-            )
-        }
-        Icon(
-            imageVector = Icons.Default.TabletAndroid,
-            contentDescription = "Tablet",
-            tint = Color.White,
-            modifier = Modifier.size(100.dp)
+    LayoutContainer(backgroundColor = Color.Green) {
+        TwoPaneLayout(
+            title = "Medium Layout",
+            description = "Suitable for tablets or medium devices.",
+            icon = Icons.Default.TabletAndroid
         )
     }
 }
 
 @Composable
 private fun ExpandedLayout() {
-    Row(
+    LayoutContainer(backgroundColor = Color.Blue) {
+        TwoPaneLayout(
+            title = "Expanded Layout",
+            description = "Suitable for large screens such as desktops.",
+            icon = Icons.Default.DesktopWindows,
+            reverseOrder = true
+        )
+    }
+}
+
+@Composable
+private fun LayoutContainer(
+    backgroundColor: Color,
+    content: @Composable () -> Unit
+) {
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Blue.copy(alpha = 0.5f))
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+            .background(backgroundColor.copy(alpha = 0.5f)),
+        contentAlignment = Alignment.Center
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun ColumnLayout(title: String, description: String) {
+    Column(
+        modifier = Modifier.padding(16.dp)
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        TitleText(text = title)
+        Spacer(modifier = Modifier.height(8.dp))
+        DescriptionText(text = description)
+    }
+}
+
+@Composable
+private fun TwoPaneLayout(
+    title: String,
+    description: String,
+    icon: ImageVector,
+    reverseOrder: Boolean = false
+) {
+    Row(
+        modifier = Modifier.padding(16.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = Icons.Default.DesktopWindows,
-            contentDescription = "Desktop",
-            tint = Color.White,
-            modifier = Modifier.size(150.dp)
-        )
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "Expanded Layout",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Suitable for large screens such as desktops.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White
-            )
+        if (reverseOrder) {
+            IconLayout(icon = icon)
+            ColumnLayout(title, description)
+        } else {
+            ColumnLayout(title, description)
+            IconLayout(icon = icon)
         }
     }
+}
+
+@Composable
+private fun TitleText(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.headlineMedium,
+        color = Color.White
+    )
+}
+
+@Composable
+private fun DescriptionText(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge,
+        color = Color.White
+    )
+}
+
+@Composable
+private fun IconLayout(icon: ImageVector) {
+    Icon(
+        imageVector = icon,
+        contentDescription = null,
+        tint = Color.White,
+        modifier = Modifier.size(100.dp)
+    )
+}
+
+@Composable
+@SuppressLint("ContextCastToActivity")
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+private fun rememberWindowSizeClass(): WindowSizeClass {
+    val activity = LocalContext.current as Activity
+    return calculateWindowSizeClass(activity)
+}
+
+@Composable
+private fun dynamicColorScheme(): ColorScheme {
+    return if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
 }

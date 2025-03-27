@@ -14,20 +14,36 @@ import com.droidcon.composablebank.utils.CustomTopAppBar
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController) {
+    HomeContent(navController = navController)
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun HomeContent(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        CustomTopAppBar(title = "Composable Bank")
-        val groupedComposables = DataProvider.composables.groupBy { it.category }
+        ScreenHeader()
+        ComposablesList(navController = navController)
+    }
+}
 
-        groupedComposables.forEach { (category, items) ->
-            CategoryItem(
-                categoryName = category,
-                items = items,
-                navController = navController
-            )
-        }
+@Composable
+private fun ScreenHeader() {
+    CustomTopAppBar(title = "Composable Bank")
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun ComposablesList(navController: NavController) {
+    val groupedComposables = DataProvider.composables.groupBy { it.category }
+    groupedComposables.forEach { (category, items) ->
+        CategoryItem(
+            categoryName = category,
+            items = items,
+            navController = navController
+        )
     }
 }

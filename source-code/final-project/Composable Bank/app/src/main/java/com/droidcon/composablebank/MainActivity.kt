@@ -17,14 +17,31 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupComposableContent()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setupComposableContent() {
         setContent {
-            ComposableBankTheme {
-                Surface(color = MaterialTheme.colorScheme.background) {
-                    val navController = rememberNavController()
-                    NavGraph(navController = navController)
-                }
-            }
+            ComposableBankApp()
         }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun ComposableBankApp() {
+    ComposableBankTheme {
+        AppSurfaceContent()
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun AppSurfaceContent() {
+    Surface(color = MaterialTheme.colorScheme.background) {
+        val navController = rememberNavController()
+        NavGraph(navController = navController)
     }
 }
 
@@ -32,10 +49,22 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
+    PreviewComposableBankApp()
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun PreviewComposableBankApp() {
     ComposableBankTheme {
-        Surface(color = MaterialTheme.colorScheme.background) {
-            val navController = rememberNavController()
-            NavGraph(navController = navController)
-        }
+        PreviewSurfaceContent()
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun PreviewSurfaceContent() {
+    Surface(color = MaterialTheme.colorScheme.background) {
+        val navController = rememberNavController()
+        NavGraph(navController = navController)
     }
 }

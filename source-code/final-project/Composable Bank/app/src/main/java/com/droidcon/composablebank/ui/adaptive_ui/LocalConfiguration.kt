@@ -1,6 +1,7 @@
 package com.droidcon.composablebank.ui.adaptive_ui
 
 import android.app.Activity
+import android.content.Context
 import android.content.pm.ActivityInfo
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,8 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -36,132 +39,168 @@ import com.droidcon.composablebank.utils.CustomTopAppBar
 
 @Composable
 fun LocalConfiguration(navController: NavController, name: String) {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
+    val context = LocalContext.current
 
+    val configurationState = rememberConfigurationState(configuration, context)
+
+    MaterialTheme(
+        colorScheme = if (configurationState.currentDarkMode) darkColorScheme() else lightColorScheme()
+    ) {
+        AppScaffold(
+            title = name,
+            navController = navController,
+            configuration = configuration,
+            state = configurationState
+        )
+    }
+}
+
+@Composable
+private fun rememberConfigurationState(
+    configuration: Configuration,
+    context: Context
+): ConfigurationState {
     val isSystemInDarkTheme = isSystemInDarkTheme()
+
     var currentDarkMode by rememberSaveable { mutableStateOf(isSystemInDarkTheme) }
     var orientation by remember { mutableIntStateOf(configuration.orientation) }
 
+    return ConfigurationState(
+        currentDarkMode = currentDarkMode,
+        onDarkModeChange = { newValue -> currentDarkMode = newValue },
+        orientation = orientation,
+        onOrientationChange = { newOrientation ->
+            orientation = newOrientation
+            (context as? Activity)?.requestedOrientation = when (newOrientation) {
+                Configuration.ORIENTATION_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+        },
+        configuration = configuration
+    )
+}
+
+private class ConfigurationState(
+    var currentDarkMode: Boolean,
+    val onDarkModeChange: (Boolean) -> Unit,
+    var orientation: Int,
+    val onOrientationChange: (Int) -> Unit,
+    val configuration: Configuration
+)
+
+@Composable
+private fun AppScaffold(
+    title: String,
+    navController: NavController,
+    configuration: Configuration,
+    state: ConfigurationState
+) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = { CustomTopAppBar(title = title, navController = navController) },
+        content = { padding ->
+            ConfigurationContent(
+                padding = padding,
+                state = state,
+                configuration = configuration
+            )
+        }
+    )
+}
+
+@Composable
+private fun ConfigurationContent(
+    padding: PaddingValues,
+    state: ConfigurationState,
+    configuration: Configuration
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ConfigurationHeader()
+        ConfigurationDetails(configuration, state)
+        ConfigurationControls(state)
+        OrientationLayout(state.orientation)
+    }
+}
+
+@Composable
+private fun ConfigurationControls(state: ConfigurationState) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        InteractiveSwitch(
+            label = "Dark Mode",
+            checked = state.currentDarkMode,
+            onCheckedChange = state.onDarkModeChange
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OrientationToggleButton(state)
+    }
+}
+
+@Composable
+private fun OrientationToggleButton(state: ConfigurationState) {
+    Button(onClick = {
+        val newOrientation = if (state.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Configuration.ORIENTATION_LANDSCAPE
+        } else {
+            Configuration.ORIENTATION_PORTRAIT
+        }
+        state.onOrientationChange(newOrientation)
+    }) {
+        Text("Toggle Orientation")
+    }
+}
+
+@Composable
+private fun OrientationLayout(orientation: Int) {
+    when (orientation) {
+        Configuration.ORIENTATION_PORTRAIT -> PortraitLayout()
+        Configuration.ORIENTATION_LANDSCAPE -> LandscapeLayout()
+    }
+}
+
+@Composable
+private fun ConfigurationDetails(configuration: Configuration, state: ConfigurationState) {
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
     val density = LocalDensity.current.density
-    val fontScale = LocalDensity.current.fontScale
-    val touchscreen = when (configuration.touchscreen) {
-        Configuration.TOUCHSCREEN_FINGER -> "Touchscreen (Finger)"
-        else -> "No Touchscreen"
+
+    Column {
+        ConfigurationItem("Screen Width", screenWidth.toString())
+        ConfigurationItem("Screen Height", screenHeight.toString())
+        ConfigurationItem("Orientation", if (state.orientation == Configuration.ORIENTATION_LANDSCAPE) "Landscape" else "Portrait")
+        ConfigurationItem("Night Mode", if (state.currentDarkMode) "Enabled" else "Disabled")
+        ConfigurationItem("Screen Density", "${density}x")
     }
-    val keyboard = when (configuration.keyboard) {
-        Configuration.KEYBOARD_QWERTY -> "Physical QWERTY Keyboard"
-        Configuration.KEYBOARD_12KEY -> "12-Key Keyboard"
-        else -> "No Physical Keyboard"
-    }
-    val navigation = when (configuration.navigation) {
-        Configuration.NAVIGATION_DPAD -> "DPad Navigation"
-        Configuration.NAVIGATION_TRACKBALL -> "Trackball Navigation"
-        Configuration.NAVIGATION_WHEEL -> "Wheel Navigation"
-        else -> "No Special Navigation"
-    }
+}
 
-    MaterialTheme(
-        colorScheme = if (currentDarkMode) darkColorScheme() else lightColorScheme(),
-        content = {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                topBar = {
-                    CustomTopAppBar(title = name, navController = navController)
-                },
-                content = { paddingValues ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                            .verticalScroll(rememberScrollState()),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Device Configuration",
-                            style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier.padding(vertical = 16.dp)
-                        )
+@Composable
+private fun ConfigurationItem(label: String, value: String) {
+    Text(
+        text = "$label: $value",
+        style = MaterialTheme.typography.bodyLarge
+    )
+}
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = "Screen Width: $screenWidth",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "Screen Height: $screenHeight",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "Orientation: ${if (orientation == Configuration.ORIENTATION_LANDSCAPE) "Landscape" else "Portrait"}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "Night Mode: ${if (currentDarkMode) "Enabled" else "Disabled"}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "Screen Density: ${density}x",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "Font Scale: $fontScale",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "Touchscreen: $touchscreen",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "Keyboard: $keyboard",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "Navigation: $navigation",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        InteractiveSwitch(
-                            label = "Dark Mode",
-                            checked = currentDarkMode,
-                            onCheckedChange = { isChecked ->
-                                currentDarkMode = isChecked
-                            }
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Button(onClick = {
-                            val newOrientation = if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                            } else {
-                                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                            }
-                            (context as? Activity)?.requestedOrientation = newOrientation
-                            orientation = if (newOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                                Configuration.ORIENTATION_LANDSCAPE
-                            } else {
-                                Configuration.ORIENTATION_PORTRAIT
-                            }
-                        }) {
-                            Text("Toggle Orientation")
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        when (orientation) {
-                            Configuration.ORIENTATION_PORTRAIT -> PortraitLayout()
-                            Configuration.ORIENTATION_LANDSCAPE -> LandscapeLayout()
-                        }
-                    }
-                }
-            )
-        }
+@Composable
+private fun ConfigurationHeader() {
+    Text(
+        text = "Device Configuration",
+        style = MaterialTheme.typography.headlineMedium,
+        modifier = Modifier.padding(vertical = 16.dp)
     )
 }
 

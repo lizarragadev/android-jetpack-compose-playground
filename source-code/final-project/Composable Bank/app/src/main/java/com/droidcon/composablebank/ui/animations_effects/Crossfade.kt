@@ -28,65 +28,105 @@ import com.droidcon.composablebank.components.InteractiveButton
 @Composable
 fun Crossfade(navController: NavController, name: String) {
     var selectedState by remember { mutableStateOf("Home") }
-    val states = listOf("Home", "Search", "Profile")
+    val availableStates = listOf("Home", "Search", "Profile")
 
     Scaffold(
-        topBar = {
-            CustomTopAppBar(title = name, navController = navController)
-        },
+        topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Select a State",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
-                states.forEach { state ->
-                    InteractiveButton(
-                        text = state,
-                        onClick = { selectedState = state },
-                        backgroundColor = if (state == selectedState) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                        contentColor = if (state == selectedState) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Crossfade(
-                    targetState = selectedState,
-                    animationSpec = tween(1000),
-                    label = "CrossfadeExample"
-                ) { currentState ->
-                    Box(
-                        modifier = Modifier
-                            .size(200.dp)
-                            .background(getColorForState(currentState)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = currentState,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
+            MainCrossfadeContent(
+                paddingValues = paddingValues,
+                selectedState = selectedState,
+                states = availableStates,
+                onStateSelected = { selectedState = it }
+            )
         }
     )
 }
 
-private fun getColorForState(state: String): Color {
-    return when (state) {
-        "Home" -> Color.Red
-        "Search" -> Color.Green
-        "Profile" -> Color.Blue
-        else -> Color.DarkGray
+@Composable
+private fun MainCrossfadeContent(
+    paddingValues: PaddingValues,
+    selectedState: String,
+    states: List<String>,
+    onStateSelected: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        StateSelectionHeader()
+        StateSelector(
+            currentState = selectedState,
+            states = states,
+            onStateSelected = onStateSelected
+        )
+        AnimatedContentContainer(selectedState = selectedState)
     }
+}
+
+@Composable
+private fun StateSelectionHeader() {
+    Text(
+        text = "Select a State",
+        style = MaterialTheme.typography.titleLarge,
+        modifier = Modifier.padding(vertical = 16.dp)
+    )
+}
+
+@Composable
+private fun StateSelector(
+    currentState: String,
+    states: List<String>,
+    onStateSelected: (String) -> Unit
+) {
+    states.forEach { state ->
+        InteractiveButton(
+            text = state,
+            onClick = { onStateSelected(state) },
+            backgroundColor = if (state == currentState) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.surface,
+            contentColor = if (state == currentState) MaterialTheme.colorScheme.onPrimary
+            else MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(8.dp)
+        )
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun AnimatedContentContainer(selectedState: String) {
+    Crossfade(
+        targetState = selectedState,
+        animationSpec = tween(1000),
+        label = "CrossfadeExample"
+    ) { currentState ->
+        StatePreviewBox(state = currentState)
+    }
+}
+
+@Composable
+private fun StatePreviewBox(state: String) {
+    Box(
+        modifier = Modifier
+            .size(200.dp)
+            .background(getColorForState(state)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = state,
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.White
+        )
+    }
+}
+
+private fun getColorForState(state: String): Color = when (state) {
+    "Home" -> Color.Red
+    "Search" -> Color.Green
+    "Profile" -> Color.Blue
+    else -> Color.DarkGray
 }

@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
+import com.droidcon.composablebank.data.ComposableItem
 import com.droidcon.composablebank.data.DataProvider
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -19,20 +20,39 @@ import com.droidcon.composablebank.data.DataProvider
 fun DemoContainer(composableName: String?, navController: NavController) {
     val composable = DataProvider.composables.find { it.name == composableName }
 
+    ContainerBackground {
+        when {
+            composable != null -> ShowComposableDemo(composable, navController)
+            else -> ShowErrorMessage()
+        }
+    }
+}
+
+@Composable
+private fun ContainerBackground(content: @Composable () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.error)
     ) {
-        if (composable != null) {
-            composable.demo(navController, composable.name)
-        } else {
-            Text(
-                text = "Demo not found",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        content()
     }
+}
+
+@Composable
+private fun ShowComposableDemo(
+    composable: ComposableItem,
+    navController: NavController
+) {
+    composable.demo(navController, composable.name)
+}
+
+@Composable
+private fun ShowErrorMessage() {
+    Text(
+        text = "Demo not found",
+        style = MaterialTheme.typography.bodyLarge,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth()
+    )
 }

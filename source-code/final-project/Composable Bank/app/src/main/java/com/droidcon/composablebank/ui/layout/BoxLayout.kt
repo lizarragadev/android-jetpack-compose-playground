@@ -34,108 +34,196 @@ import com.droidcon.composablebank.R
 @Composable
 fun BoxLayout(navController: NavController, name: String) {
     var showSnackbar by remember { mutableStateOf(false) }
-
-    var alignmentName by remember { mutableStateOf("topstart") }
+    var alignmentName by remember { mutableStateOf("TopStart") }
     var showImage by remember { mutableStateOf(true) }
     var showButton by remember { mutableStateOf(true) }
     var boxColor by remember { mutableStateOf(Color.Cyan) }
 
-    val alignments = mapOf(
-        "topstart" to Alignment.TopStart,
-        "topcenter" to Alignment.TopCenter,
-        "topend" to Alignment.TopEnd,
-        "centerstart" to Alignment.CenterStart,
-        "center" to Alignment.Center,
-        "centerend" to Alignment.CenterEnd,
-        "bottomstart" to Alignment.BottomStart,
-        "bottomcenter" to Alignment.BottomCenter,
-        "bottomend" to Alignment.BottomEnd
-    )
+    val alignments = remember {
+        mapOf(
+            "TopStart" to Alignment.TopStart,
+            "TopCenter" to Alignment.TopCenter,
+            "TopEnd" to Alignment.TopEnd,
+            "CenterStart" to Alignment.CenterStart,
+            "Center" to Alignment.Center,
+            "CenterEnd" to Alignment.CenterEnd,
+            "BottomStart" to Alignment.BottomStart,
+            "BottomCenter" to Alignment.BottomCenter,
+            "BottomEnd" to Alignment.BottomEnd
+        )
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Content Alignment",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    InteractiveRadioButtonGroup(
-                        options = alignments.keys.toList(),
-                        selectedOption = alignmentName,
-                        onOptionSelected = { alignmentName = it }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    InteractiveSwitch(
-                        label = "Show Image",
-                        checked = showImage,
-                        onCheckedChange = { showImage = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveSwitch(
-                        label = "Show Button",
-                        checked = showButton,
-                        onCheckedChange = { showButton = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    InteractiveColorPicker(
-                        label = "Box Background Color",
-                        selectedColor = boxColor,
-                        onColorSelected = { boxColor = it }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .background(boxColor)
-                        .padding(16.dp),
-                    contentAlignment = alignments[alignmentName] ?: Alignment.Center
-                ) {
-                    if (showImage) {
-                        Image(
-                            painter = painterResource(id = R.drawable.droidcon),
-                            contentDescription = "Sample Image",
-                            modifier = Modifier.size(100.dp)
-                        )
-                    }
-                    Text(
-                        text = "Hello from Box!",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                    if (showButton) {
-                        FloatingActionButton(
-                            onClick = { showSnackbar = true },
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(16.dp),
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add")
-                        }
-                    }
-                }
-            }
+            MainContent(
+                paddingValues = paddingValues,
+                alignmentName = alignmentName,
+                showImage = showImage,
+                showButton = showButton,
+                boxColor = boxColor,
+                alignments = alignments,
+                onAlignmentChange = { alignmentName = it },
+                onShowImageChange = { showImage = it },
+                onShowButtonChange = { showButton = it },
+                onBoxColorChange = { boxColor = it },
+                onShowSnackbar = { showSnackbar = true }
+            )
         }
     )
+}
+
+@Composable
+private fun MainContent(
+    paddingValues: PaddingValues,
+    alignmentName: String,
+    showImage: Boolean,
+    showButton: Boolean,
+    boxColor: Color,
+    alignments: Map<String, Alignment>,
+    onAlignmentChange: (String) -> Unit,
+    onShowImageChange: (Boolean) -> Unit,
+    onShowButtonChange: (Boolean) -> Unit,
+    onBoxColorChange: (Color) -> Unit,
+    onShowSnackbar: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        BoxConfigurationPanel(
+            alignmentName = alignmentName,
+            showImage = showImage,
+            showButton = showButton,
+            boxColor = boxColor,
+            alignmentOptions = alignments.keys.toList(),
+            onAlignmentChange = onAlignmentChange,
+            onShowImageChange = onShowImageChange,
+            onShowButtonChange = onShowButtonChange,
+            onBoxColorChange = onBoxColorChange
+        )
+
+        BoxContent(
+            alignment = alignments[alignmentName] ?: Alignment.Center,
+            showImage = showImage,
+            showButton = showButton,
+            boxColor = boxColor,
+            onButtonClick = onShowSnackbar
+        )
+    }
+}
+
+@Composable
+private fun BoxConfigurationPanel(
+    alignmentName: String,
+    showImage: Boolean,
+    showButton: Boolean,
+    boxColor: Color,
+    alignmentOptions: List<String>,
+    onAlignmentChange: (String) -> Unit,
+    onShowImageChange: (Boolean) -> Unit,
+    onShowButtonChange: (Boolean) -> Unit,
+    onBoxColorChange: (Color) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Content Alignment",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        InteractiveRadioButtonGroup(
+            options = alignmentOptions,
+            selectedOption = alignmentName,
+            onOptionSelected = onAlignmentChange
+        )
+        SwitchGroup(
+            showImage = showImage,
+            showButton = showButton,
+            onShowImageChange = onShowImageChange,
+            onShowButtonChange = onShowButtonChange
+        )
+        InteractiveColorPicker(
+            label = "Box Background Color",
+            selectedColor = boxColor,
+            onColorSelected = onBoxColorChange
+        )
+    }
+}
+
+@Composable
+private fun SwitchGroup(
+    showImage: Boolean,
+    showButton: Boolean,
+    onShowImageChange: (Boolean) -> Unit,
+    onShowButtonChange: (Boolean) -> Unit
+) {
+    Column {
+        InteractiveSwitch(
+            label = "Show Image",
+            checked = showImage,
+            onCheckedChange = onShowImageChange
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        InteractiveSwitch(
+            label = "Show Button",
+            checked = showButton,
+            onCheckedChange = onShowButtonChange
+        )
+    }
+}
+
+@Composable
+private fun BoxContent(
+    alignment: Alignment,
+    showImage: Boolean,
+    showButton: Boolean,
+    boxColor: Color,
+    onButtonClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .background(boxColor)
+            .padding(16.dp)
+    ) {
+        if (showImage) {
+            Image(
+                painter = painterResource(id = R.drawable.droidcon),
+                contentDescription = "Sample Image",
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(alignment)
+            )
+        }
+
+        Text(
+            text = "Hello from Box!",
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+        if (showButton) {
+            FloatingActionButton(
+                onClick = onButtonClick,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add")
+            }
+        }
+    }
 }

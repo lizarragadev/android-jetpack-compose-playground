@@ -30,7 +30,7 @@ import com.droidcon.composablebank.components.InteractiveSwitch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Sliders(navController: NavController, name: String) {
-    var sliderType by remember { mutableStateOf("continuous") }
+    var sliderType by remember { mutableStateOf("Continuous") }
     var showValue by remember { mutableStateOf(true) }
     var sliderColor by remember { mutableStateOf(Color.Blue) }
     var isEnabled by remember { mutableStateOf(true) }
@@ -44,123 +44,187 @@ fun Sliders(navController: NavController, name: String) {
         modifier = Modifier.fillMaxSize(),
         topBar = { CustomTopAppBar(title = name, navController = navController) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp)
-                ) {
-                    InteractiveRadioButtonGroup(
-                        options = listOf("Continuous", "Discrete", "Range"),
-                        selectedOption = sliderType,
-                        onOptionSelected = { sliderType = it.lowercase() }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveSwitch(
-                        label = "Show Value",
-                        checked = showValue,
-                        onCheckedChange = { showValue = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveColorPicker(
-                        label = "Slider Color",
-                        selectedColor = sliderColor,
-                        onColorSelected = { sliderColor = it }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InteractiveSwitch(
-                        label = "Enabled",
-                        checked = isEnabled,
-                        onCheckedChange = { isEnabled = it }
-                    )
+            MainContent(
+                paddingValues = paddingValues,
+                sliderType = sliderType,
+                showValue = showValue,
+                sliderColor = sliderColor,
+                isEnabled = isEnabled,
+                steps = steps,
+                sliderValue = sliderValue,
+                sliderRangeStart = sliderRangeStart,
+                sliderRangeEnd = sliderRangeEnd,
+                onTypeChange = { sliderType = it },
+                onShowValueChange = { showValue = it },
+                onColorChange = { sliderColor = it },
+                onEnabledChange = { isEnabled = it },
+                onStepsChange = { steps = it },
+                onValueChange = { sliderValue = it },
+                onRangeChange = { start, end ->
+                    sliderRangeStart = start
+                    sliderRangeEnd = end
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                ) {
-                    when (sliderType) {
-                        "continuous" -> ContinuousSlider(
-                            value = sliderValue,
-                            onValueChange = { sliderValue = it },
-                            showValue = showValue,
-                            sliderColor = sliderColor,
-                            isEnabled = isEnabled
-                        )
-                        "discrete" -> DiscreteSlider(
-                            value = sliderValue,
-                            onValueChange = { sliderValue = it },
-                            steps = steps,
-                            showValue = showValue,
-                            sliderColor = sliderColor,
-                            isEnabled = isEnabled
-                        )
-                        "range" -> RangeSlider(
-                            start = sliderRangeStart,
-                            end = sliderRangeEnd,
-                            onValueChange = { range ->
-                                sliderRangeStart = range.start
-                                sliderRangeEnd = range.endInclusive
-                            },
-                            sliderColor = sliderColor,
-                            isEnabled = isEnabled
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+            )
         }
     )
 }
 
 @Composable
-private fun ContinuousSlider(
-    value: Float,
-    onValueChange: (Float) -> Unit,
+private fun MainContent(
+    paddingValues: PaddingValues,
+    sliderType: String,
     showValue: Boolean,
     sliderColor: Color,
-    isEnabled: Boolean
+    isEnabled: Boolean,
+    steps: Int,
+    sliderValue: Float,
+    sliderRangeStart: Float,
+    sliderRangeEnd: Float,
+    onTypeChange: (String) -> Unit,
+    onShowValueChange: (Boolean) -> Unit,
+    onColorChange: (Color) -> Unit,
+    onEnabledChange: (Boolean) -> Unit,
+    onStepsChange: (Int) -> Unit,
+    onValueChange: (Float) -> Unit,
+    onRangeChange: (Float, Float) -> Unit
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = 0f..100f,
-            enabled = isEnabled,
-            colors = SliderDefaults.colors(
-                thumbColor = sliderColor,
-                activeTrackColor = sliderColor,
-                inactiveTrackColor = sliderColor.copy(alpha = 0.3f)
-            )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SliderConfigurationPanel(
+            sliderType = sliderType,
+            showValue = showValue,
+            sliderColor = sliderColor,
+            isEnabled = isEnabled,
+            onTypeChange = onTypeChange,
+            onShowValueChange = onShowValueChange,
+            onColorChange = onColorChange,
+            onEnabledChange = onEnabledChange,
         )
-        if (showValue) {
-            Text(
-                text = "Value: ${value.toInt()}",
-                style = MaterialTheme.typography.bodyLarge,
-                color = sliderColor
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        SliderDisplay(
+            sliderType = sliderType,
+            sliderValue = sliderValue,
+            sliderRangeStart = sliderRangeStart,
+            sliderRangeEnd = sliderRangeEnd,
+            showValue = showValue,
+            sliderColor = sliderColor,
+            isEnabled = isEnabled,
+            steps = steps,
+            onValueChange = onValueChange,
+            onRangeChange = onRangeChange
+        )
+    }
+}
+
+@Composable
+private fun SliderConfigurationPanel(
+    sliderType: String,
+    showValue: Boolean,
+    sliderColor: Color,
+    isEnabled: Boolean,
+    onTypeChange: (String) -> Unit,
+    onShowValueChange: (Boolean) -> Unit,
+    onColorChange: (Color) -> Unit,
+    onEnabledChange: (Boolean) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
+    ) {
+        InteractiveRadioButtonGroup(
+            options = listOf("Continuous", "Discrete", "Range"),
+            selectedOption = sliderType,
+            onOptionSelected = { onTypeChange(it) }
+        )
+
+        ConfigurationSwitch("Show Value", showValue, onShowValueChange)
+        ColorSelection("Slider Color", sliderColor, onColorChange)
+        ConfigurationSwitch("Enabled", isEnabled, onEnabledChange)
+    }
+}
+
+@Composable
+private fun SliderDisplay(
+    sliderType: String,
+    sliderValue: Float,
+    sliderRangeStart: Float,
+    sliderRangeEnd: Float,
+    showValue: Boolean,
+    sliderColor: Color,
+    isEnabled: Boolean,
+    steps: Int,
+    onValueChange: (Float) -> Unit,
+    onRangeChange: (Float, Float) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+    ) {
+        when (sliderType) {
+            "Continuous" -> ContinuousSliderComponent(
+                value = sliderValue,
+                showValue = showValue,
+                color = sliderColor,
+                enabled = isEnabled,
+                onValueChange = onValueChange
+            )
+            "Discrete" -> DiscreteSliderComponent(
+                value = sliderValue,
+                steps = steps,
+                showValue = showValue,
+                color = sliderColor,
+                enabled = isEnabled,
+                onValueChange = onValueChange
+            )
+            "Range" -> RangeSliderComponent(
+                start = sliderRangeStart,
+                end = sliderRangeEnd,
+                color = sliderColor,
+                enabled = isEnabled,
+                onRangeChange = onRangeChange
             )
         }
     }
 }
 
 @Composable
-private fun DiscreteSlider(
+private fun ContinuousSliderComponent(
     value: Float,
-    onValueChange: (Float) -> Unit,
+    showValue: Boolean,
+    color: Color,
+    enabled: Boolean,
+    onValueChange: (Float) -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = 0f..100f,
+            enabled = enabled,
+            colors = sliderColors(color)
+        )
+        ValueDisplay(showValue, "Value: ${value.toInt()}", color)
+    }
+}
+
+@Composable
+private fun DiscreteSliderComponent(
+    value: Float,
     steps: Int,
     showValue: Boolean,
-    sliderColor: Color,
-    isEnabled: Boolean
+    color: Color,
+    enabled: Boolean,
+    onValueChange: (Float) -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Slider(
@@ -168,47 +232,77 @@ private fun DiscreteSlider(
             onValueChange = onValueChange,
             valueRange = 0f..100f,
             steps = steps,
-            enabled = isEnabled,
-            colors = SliderDefaults.colors(
-                thumbColor = sliderColor,
-                activeTrackColor = sliderColor,
-                inactiveTrackColor = sliderColor.copy(alpha = 0.3f)
-            ),
+            enabled = enabled,
+            colors = sliderColors(color)
         )
-        if (showValue) {
-            Text(
-                text = "Discrete Value: ${value.toInt()}",
-                style = MaterialTheme.typography.bodyLarge,
-                color = sliderColor
-            )
-        }
+        ValueDisplay(showValue, "Discrete Value: ${value.toInt()}", color)
     }
 }
 
 @Composable
-private fun RangeSlider(
+private fun RangeSliderComponent(
     start: Float,
     end: Float,
-    onValueChange: (ClosedFloatingPointRange<Float>) -> Unit,
-    sliderColor: Color,
-    isEnabled: Boolean
+    color: Color,
+    enabled: Boolean,
+    onRangeChange: (Float, Float) -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         RangeSlider(
             value = start..end,
-            onValueChange = onValueChange,
+            onValueChange = { range ->
+                onRangeChange(range.start, range.endInclusive)
+            },
             valueRange = 0f..100f,
-            enabled = isEnabled,
-            colors = SliderDefaults.colors(
-                thumbColor = sliderColor,
-                activeTrackColor = sliderColor,
-                inactiveTrackColor = sliderColor.copy(alpha = 0.3f)
-            )
+            enabled = enabled,
+            colors = sliderColors(color)
         )
         Text(
             text = "Range: ${start.toInt()} - ${end.toInt()}",
             style = MaterialTheme.typography.bodyLarge,
-            color = sliderColor
+            color = color
+        )
+    }
+}
+
+@Composable
+private fun sliderColors(color: Color) = SliderDefaults.colors(
+    thumbColor = color,
+    activeTrackColor = color,
+    inactiveTrackColor = color.copy(alpha = 0.3f)
+)
+
+@Composable
+private fun ValueDisplay(visible: Boolean, text: String, color: Color) {
+    if (visible) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = color
+        )
+    }
+}
+
+@Composable
+private fun ConfigurationSwitch(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Column {
+        Spacer(modifier = Modifier.height(8.dp))
+        InteractiveSwitch(
+            label = label,
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+    }
+}
+
+@Composable
+private fun ColorSelection(label: String, color: Color, onColorSelected: (Color) -> Unit) {
+    Column {
+        Spacer(modifier = Modifier.height(8.dp))
+        InteractiveColorPicker(
+            label = label,
+            selectedColor = color,
+            onColorSelected = onColorSelected
         )
     }
 }
