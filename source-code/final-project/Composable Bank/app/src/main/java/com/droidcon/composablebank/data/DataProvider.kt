@@ -6,18 +6,25 @@ import com.droidcon.composablebank.ui.adaptive_ui.*
 import com.droidcon.composablebank.ui.animations_effects.*
 import com.droidcon.composablebank.ui.feedback_loading.*
 import com.droidcon.composablebank.ui.input_controls.*
-import com.droidcon.composablebank.ui.layout.*
+import com.droidcon.composablebank.ui.basic_comp_layouts.*
+import com.droidcon.composablebank.ui.dev_tools.ComposePreviewTool
+import com.droidcon.composablebank.ui.dev_tools.LayoutInspectorTool
+import com.droidcon.composablebank.ui.interaction_gestures.DraggableInteraction
+import com.droidcon.composablebank.ui.interaction_gestures.GestureDetectorInteraction
 import com.droidcon.composablebank.ui.navigation.*
 
+@RequiresApi(Build.VERSION_CODES.O)
 object DataProvider {
     private val allComposables by lazy {
         listOf(
-            feedbackComposables,
-            navigationComposables,
-            layoutComposables,
+            basicComLayoutsComposables,
             inputComposables,
+            navigationComposables,
+            feedbackComposables,
+            interactionGesturesComposables,
             animationComposables,
-            adaptiveUiComposables
+            adaptiveUiComposables,
+            devToolsComposables
         ).flatten()
     }
 
@@ -25,36 +32,31 @@ object DataProvider {
         @RequiresApi(Build.VERSION_CODES.O)
         get() = allComposables
 
-    private const val CATEGORY_FEEDBACK = "Feedback & Loading"
-    private const val CATEGORY_NAVIGATION = "Navigation"
-    private const val CATEGORY_LAYOUT = "Layout"
+    private const val CATEGORY_BASIC_COMP_LAYOUTS = "Basic Components & Layouts"
     private const val CATEGORY_INPUT = "Input Controls"
+    private const val CATEGORY_NAVIGATION = "Navigation"
+    private const val CATEGORY_FEEDBACK = "Feedback & Loading"
+    private const val CATEGORY_INTERACTION_GESTURES = "Interaction & Gestures"
     private const val CATEGORY_ANIMATION = "Animations & Effects"
     private const val CATEGORY_ADAPTIVE = "Adaptive UI"
+    private const val CATEGORY_DEV_TOOLS = "Development Tools"
 
-    private val feedbackComposables = listOf(
-        createSnackbar(),
-        createAlertDialog(),
-        createToast(),
-        createCircularProgress(),
-        createLinearProgress()
-    )
-
-    private val navigationComposables = listOf(
-        createTopAppBar(),
-        createBottomNavigation(),
-        createBottomAppBar(),
-        createNavigationRail(),
-        createTabs()
-    )
-
-    private val layoutComposables = listOf(
+    private val basicComLayoutsComposables = listOf(
+        createScaffold(),
+        createText(),
+        createImage(),
         createRow(),
         createColumn(),
+        createSurface(),
+        createCard(),
         createBox(),
+        createLazyColumn(),
+        createLazyRow(),
+        createLazyVerticalGrid(),
         createConstraintLayout()
     )
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private val inputComposables = listOf(
         createTextField(),
         createButton(),
@@ -62,10 +64,41 @@ object DataProvider {
         createSwitch(),
         createCheckbox(),
         createRadioButton(),
+        createChip(),
+        createDropDownMenu(),
+        createDatePickers(),
+        createTimePickers(),
         createSearchBar()
     )
 
+    private val navigationComposables = listOf(
+        createTopAppBar(),
+        createBottomNavigation(),
+        createBottomAppBar(),
+        createNavigationRail(),
+        createTabs(),
+        createNavDrawer()
+    )
+
+    private val feedbackComposables = listOf(
+        createSnackbar(),
+        createAlertDialog(),
+        createToast(),
+        createCircularProgress(),
+        createLinearProgress(),
+        createBadge(),
+        createTooltipBox(),
+        createBottomSheetDialog()
+    )
+
+    private val interactionGesturesComposables = listOf(
+        createDraggable(),
+        createGestureDetector(),
+    )
+
     private val animationComposables = listOf(
+        createPager(),
+        createGraphisLayer(),
         createAnimatedVisibility(),
         createAnimatedContent(),
         createCrossfade(),
@@ -79,11 +112,80 @@ object DataProvider {
         createLocalConfiguration()
     )
 
+    private val devToolsComposables = listOf(
+        createComposePreview(),
+        createLayoutInspector()
+    )
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createTimePickers() = ComposableItem(
+        name = "TimePicker",
+        description = "A Material Design component that allows users to select a time using a visual clock interface. Supports both 24-hour and AM/PM formats, with customizable colors and layout orientations.",
+        category = CATEGORY_INPUT,
+        commonUse = "Scheduling events, setting reminders, time-based form inputs in applications like calendar apps or booking systems.",
+        properties = listOf(
+            "state: TimePickerState,",
+            "modifier: Modifier = Modifier,",
+            "colors: TimePickerColors = TimePickerDefaults.colors(),"
+        ),
+        demo = { navController, name -> TimePickerControl(navController, name) }
+    )
+
+    private fun createDatePickers() = ComposableItem(
+        name = "DatePicker",
+        description = "An interactive date selection component that displays a calendar grid. Supports date range restrictions and visual customization to match app themes.",
+        category = CATEGORY_INPUT,
+        commonUse = "Event planning apps, form inputs for birthdates, reservation systems requiring date selection.",
+        properties = listOf(
+            "state: DatePickerState,",
+            "modifier: Modifier = Modifier,",
+            "dateFormatter: DatePickerFormatter = remember { DatePickerDefaults. dateFormatter() },",
+            "colors: DatePickerColors = DatePickerDefaults.colors()"
+        ),
+        demo = { navController, name -> DatePickerControl(navController, name) }
+    )
+
+    private fun createDropDownMenu() = ComposableItem(
+        name = "DropdownMenu",
+        description = "A floating menu that displays a list of choices in a compact vertical layout. Automatically positions itself relative to its anchor component and closes on external interactions.",
+        category = CATEGORY_INPUT,
+        commonUse = "Selection filters in toolbars, context menus for list items, profile menu options in app headers.",
+        properties = listOf(
+            "expanded: Boolean,",
+            "onDismissRequest: () -> Unit,",
+            "modifier: Modifier = Modifier,",
+            "offset: DpOffset = DpOffset(0.dp, 0.dp),",
+            "scrollState: ScrollState = rememberScrollState(),",
+            "properties: PopupProperties = DefaultMenuProperties,"
+        ),
+        demo = { navController, name -> DropDownMenuControl(navController, name) }
+    )
+
+    private fun createChip() = ComposableItem(
+        name = "Chip",
+        description = "A compact component representing complex entities like contacts or filters. Supports selection states, icons, and customizable visual feedback for user interactions.",
+        category = CATEGORY_INPUT,
+        commonUse = "Tag selection in email clients, filter chips in e-commerce product lists, choice indicators in settings screens.",
+        properties = listOf(
+            "selected: Boolean,",
+            "onClick: () -> Unit,",
+            "label: @Composable (() -> Unit),",
+            "modifier: Modifier = Modifier,",
+            "enabled: Boolean = true,",
+            "leadingIcon: @Composable (() -> Unit)? = null,",
+            "trailingIcon: @Composable (() -> Unit)? = null,",
+            "shape: Shape = InputChipDefaults.shape,",
+            "colors: SelectableChipColors = InputChipDefaults.inputChipColors(),",
+            "border: BorderStroke? = InputChipDefaults.inputChipBorder(enabled, selected),",
+        ),
+        demo = { navController, name -> ChipControl(navController, name) }
+    )
+
     private fun createSnackbar() = ComposableItem(
         name = "Snackbar",
         description = "A component that displays a brief message at the bottom...",
         category = CATEGORY_FEEDBACK,
-        commonUse = "Temporary notifications that do not interrupt the user experience.",  // <-- Añadido
+        commonUse = "Temporary notifications that do not interrupt the user experience.",
         properties = listOf(
             "modifier: Modifier = Modifier",
             "action: @Composable (() -> Unit)? = null",
@@ -100,7 +202,7 @@ object DataProvider {
         name = "AlertDialog",
         description = "A pop-up window that displays an important message...",
         category = CATEGORY_FEEDBACK,
-        commonUse = "Confirmations, warnings or critical system messages.",  // <-- Añadido
+        commonUse = "Confirmations, warnings or critical system messages.",
         properties = listOf(
             "onDismissRequest: () -> Unit",
             "title: @Composable (() -> Unit)? = null",
@@ -155,6 +257,48 @@ object DataProvider {
             "gapSize: Dp = ProgressIndicatorDefaults.LinearIndicatorTrackGapSize"
         ),
         demo = { navController, name -> LinearProgressIndicator(navController, name) }
+    )
+
+    private fun createBottomSheetDialog() = ComposableItem(
+        name = "BottomSheets",
+        description = "A modal dialog that animates upward from the bottom of the screen. Supports three states: expanded, half-expanded, and hidden, with draggable handles for user control.",
+        category = CATEGORY_FEEDBACK,
+        commonUse = "Contextual actions in note-taking apps, detailed settings in music players, multi-step forms in banking apps.",
+        properties = listOf(
+            "onDismissRequest: () -> Unit,",
+            "modifier: Modifier = Modifier,",
+            "sheetState: SheetState = rememberModalBottomSheetState(),",
+            "containerColor: Color = BottomSheetDefaults.ContainerColor,",
+        ),
+        demo = { navController, name -> BottomSheetDialogComposable(navController, name) }
+    )
+
+    private fun createTooltipBox() = ComposableItem(
+        name = "Tooltip",
+        description = "A container that displays explanatory text when the user long-presses or hovers over an element. Implements Material Design guidelines for rich contextual help with customizable positioning and styling.",
+        category = CATEGORY_FEEDBACK,
+        commonUse = "Explaining icon meanings in toolbars, providing form field instructions, showing extended information for truncated text.",
+        properties = listOf(
+            "modifier: Modifier = Modifier,",
+            "contentColor: Color = TooltipDefaults.plainTooltipContentColor,",
+            "containerColor: Color = TooltipDefaults.plainTooltipContainerColor,",
+            "content: @Composable (() -> Unit)"
+        ),
+        demo = { navController, name -> TooltipBoxIndicator(navController, name) }
+    )
+
+    private fun createBadge() = ComposableItem(
+        name = "Badge",
+        description = "A small overlapping label that indicates status, notifications, or quantitative information. Supports dynamic content updates and multiple positioning configurations relative to its anchor.",
+        category = CATEGORY_FEEDBACK,
+        commonUse = "Unread message counters in messaging apps, new feature indicators in app icons, inventory status in e-commerce products.",
+        properties = listOf(
+            "modifier: Modifier = Modifier,",
+            "containerColor: Color = BadgeDefaults.containerColor,",
+            "contentColor: Color = contentColorFor(containerColor),",
+            "content: @Composable (RowScope.() -> Unit)? = null"
+        ),
+        demo = { navController, name -> BadgeIndicator(navController, name) }
     )
 
     private fun createTopAppBar() = ComposableItem(
@@ -235,10 +379,64 @@ object DataProvider {
         demo = { navController, name -> Tabs(navController, name) }
     )
 
+    private fun createNavDrawer() = ComposableItem(
+        name = "NavigationDrawer",
+        description = "Persistent side navigation pane that remains visible alongside primary content. Optimized for seamless integration with app structure and navigation flows.",
+        category = CATEGORY_NAVIGATION,
+        commonUse = "Primary navigation in enterprise apps, multi-section dashboards, apps requiring constant access to core features.",
+        properties = listOf(
+            "drawerContent: @Composable (() -> Unit),",
+            "modifier: Modifier = Modifier,",
+            "drawerState: DrawerState = rememberDrawerState(DrawerValue. Closed),",
+            "gesturesEnabled: Boolean = true,",
+            "scrimColor: Color = DrawerDefaults.scrimColor,",
+            "content: @Composable (() -> Unit)"
+        ),
+        demo = { navController, name -> NavDrawer(navController, name) }
+    )
+
+    private fun createGestureDetector() = ComposableItem(
+        name = "GestureDetector",
+        description = "A composable that recognizes common gesture patterns and provides callbacks for different interaction states. Supports multi-touch gestures and velocity tracking for natural-feeling interactions.",
+        category = CATEGORY_INTERACTION_GESTURES,
+        commonUse = "Implementing swipe-to-dismiss in list items, pinch-to-zoom in image viewers, double-tap interactions in social media apps.",
+        properties = listOf(
+            "PointerInputScope.detectTapGestures()",
+            "   onDoubleTap: ((Offset) -> Unit)? = null,",
+            "   onLongPress: ((Offset) -> Unit)? = null,",
+            "   onPress: suspend PressGestureScope.(Offset) -> Unit = NoPressGesture,",
+            "   onTap: ((Offset) -> Unit)? = null",
+            "PointerInputScope.detectTransformGestures()",
+            "   panZoomLock: Boolean = false",
+            "   onGesture: (Offset, Offset, Float, Float) -> Unit",
+            "PointerInputScope.detectDragGestures()",
+            "   onDragStart: (Offset) -> Unit = { },",
+            "   onDragEnd: () -> Unit = { },",
+            "   onDragCancel: () -> Unit = { },",
+            "   onDrag: (PointerInputChange, Offset) -> Unit"
+        ),
+        demo = { navController, name -> GestureDetectorInteraction(navController, name) }
+    )
+
+    private fun createDraggable() = ComposableItem(
+        name = "Draggable",
+        description = "A modifier that enables smooth dragging behavior along a specified axis. Provides real-time positional data and velocity information for physics-based animations.",
+        category = CATEGORY_INTERACTION_GESTURES,
+        commonUse = "Implementing custom sliders, creating reorderable list items, building swipeable card decks.",
+        properties = listOf(
+            "PointerInputScope.detectDragGestures()",
+            "   onDragStart: (Offset) -> Unit = { },",
+            "   onDragEnd: () -> Unit = { },",
+            "   onDragCancel: () -> Unit = { },",
+            "   onDrag: (PointerInputChange, Offset) -> Unit"
+        ),
+        demo = { navController, name -> DraggableInteraction(navController, name) }
+    )
+
     private fun createRow() = ComposableItem(
         name = "Row",
         description = "A container that organizes its child elements...",
-        category = CATEGORY_LAYOUT,
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
         commonUse = "Horizontal layouts, toolbars.",
         properties = listOf(
             "horizontalArrangement: Arrangement.Horizontal",
@@ -252,7 +450,7 @@ object DataProvider {
     private fun createColumn() = ComposableItem(
         name = "Column",
         description = "A container that organizes its child elements...",
-        category = CATEGORY_LAYOUT,
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
         commonUse = "Vertical layouts, lists of elements.",
         properties = listOf(
             "modifier: Modifier = Modifier",
@@ -265,7 +463,7 @@ object DataProvider {
     private fun createBox() = ComposableItem(
         name = "Box",
         description = "Stacking container for overlaying elements.",
-        category = CATEGORY_LAYOUT,
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
         commonUse = "Layered layouts and absolute positioning.",
         properties = listOf(
             "modifier: Modifier = Modifier",
@@ -277,13 +475,148 @@ object DataProvider {
     private fun createConstraintLayout() = ComposableItem(
         name = "ConstraintLayout",
         description = "Advanced layout with constraints.",
-        category = CATEGORY_LAYOUT,
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
         commonUse = "Complex responsive layouts.",
         properties = listOf(
             "constraintSet: ConstraintSet",
             "modifier: Modifier = Modifier"
         ),
         demo = { navController, name -> ConstraintLayout(navController, name) }
+    )
+
+    private fun createLazyVerticalGrid() = ComposableItem(
+        name = "Lazy Vertical - Horizontal Grid",
+        description = "A performant grid layout that only composes and lays out visible items. Supports adaptive column sizing and custom spacing configurations for responsive designs.",
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
+        commonUse = "Photo galleries in social apps, product grids in e-commerce, settings option panels with icon grids.",
+        properties = listOf(
+            "columns: GridCells,",
+            "modifier: Modifier = Modifier,",
+            "state: LazyGridState = rememberLazyGridState(),",
+            "verticalArrangement: Arrangement.Vertical = if (!reverseLayout) Arrangement. Top else Arrangement. Bottom,",
+            "horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,",
+            "rows: GridCells,",
+            "reverseLayout: Boolean = false,"
+        ),
+        demo = { navController, name -> LazyGridContainer(navController, name) }
+    )
+
+    private fun createLazyRow() = ComposableItem(
+        name = "LazyRow",
+        description = "A horizontally scrolling layout that efficiently handles large datasets by only rendering visible items. Supports sticky headers and custom scroll behaviors.",
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
+        commonUse = "Movie/TV show carousels in streaming apps, timeline views in productivity tools, horizontally scrollable tab bars.",
+        properties = listOf(
+            "modifier: Modifier = Modifier,",
+            "state: LazyListState = rememberLazyListState(),",
+            "horizontalArrangement: Arrangement.Horizontal = if (!reverseLayout) Arrangement. Start else Arrangement. End,",
+            "reverseLayout: Boolean = false,",
+            "userScrollEnabled: Boolean = true,",
+         ),
+        demo = { navController, name -> LazyRowContainer(navController, name) }
+    )
+
+    private fun createLazyColumn() = ComposableItem(
+        name = "LazyColumn",
+        description = "A vertically scrolling list optimized for performance with large datasets. Implements dynamic content loading and recycling for smooth scrolling experiences.",
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
+        commonUse = "Social media feeds, contact lists in messaging apps, long-form content displays in reading applications.",
+        properties = listOf(
+            "modifier: Modifier = Modifier,",
+            "reverseLayout: Boolean = false,",
+            "state: LazyListState = rememberLazyListState(),",
+            "contentPadding: PaddingValues = PaddingValues(0.dp),",
+            "verticalArrangement: Arrangement.Vertical = if (!reverseLayout) Arrangement. Top else Arrangement. Bottom,",
+            "horizontalAlignment: Alignment.Horizontal = Alignment.Start,",
+            "flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),",
+            "userScrollEnabled: Boolean = true,",
+        ),
+        demo = { navController, name -> LazyColumnContainer(navController, name) }
+    )
+
+    private fun createCard() = ComposableItem(
+        name = "Card",
+        description = "An elevated container with rounded corners that groups related content. Supports dynamic elevation changes and multiple content slots for complex layouts.",
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
+        commonUse = "Product cards in e-commerce apps, article previews in news readers, user profile summaries in social networks.",
+        properties = listOf(
+            "onClick: () -> Unit,",
+            "modifier: Modifier = Modifier,",
+            "shape: Shape = CardDefaults.shape,",
+            "colors: CardColors = CardDefaults.cardColors(),",
+            "elevation: CardElevation = CardDefaults.cardElevation(),",
+            "border: BorderStroke? = null,",
+        ),
+        demo = { navController, name -> CardComposable(navController, name) }
+    )
+
+    private fun createSurface() = ComposableItem(
+        name = "Surface",
+        description = "A foundational layout container that provides styling through elevation and shape. Serves as the base for Material Design components with theme-aware color properties.",
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
+        commonUse = "Creating contrast areas in complex UIs, building custom dialogs, implementing theme-aware background surfaces.",
+        properties = listOf(
+            "modifier: Modifier = Modifier",
+            "shape: Shape = RectangleShape",
+            "color: Color = MaterialTheme.colorScheme.surface",
+            "content: @Composable () -> Unit"
+        ),
+        demo = { navController, name -> SurfaceLayout(navController, name) }
+    )
+
+    private fun createImage() = ComposableItem(
+        name = "Image",
+        description = "A flexible component for displaying bitmap or vector images with multiple scaling options. Supports content descriptions for accessibility and complex transformation effects.",
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
+        commonUse = "User avatars in profile screens, product images in detail views, decorative illustrations in onboarding flows.",
+        properties = listOf(
+            "painter: Painter,",
+            "contentDescription: String?,",
+            "modifier: Modifier = Modifier,",
+            "alignment: Alignment = Alignment.Center,",
+            "contentScale: ContentScale = ContentScale.Fit,",
+            "alpha: Float = DefaultAlpha,",
+            "colorFilter: ColorFilter? = null"
+        ),
+        demo = { navController, name -> ImageComposable(navController, name) }
+    )
+
+    private fun createText() = ComposableItem(
+        name = "Text",
+        description = "The fundamental component for displaying read-only text in various typographic styles. Supports rich text formatting, inline emojis, and accessibility scaling.",
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
+        commonUse = "Displaying article content, showing user-generated comments, rendering UI labels and headers across all app screens.",
+        properties = listOf(
+            "text: AnnotatedString,",
+            "modifier: Modifier = Modifier,",
+            "color: Color = Color.Unspecified,",
+            "fontSize: TextUnit = TextUnit.Unspecified,",
+            "fontStyle: FontStyle? = null,",
+            "fontWeight: FontWeight? = null,",
+            "fontFamily: FontFamily? = null,",
+            "letterSpacing: TextUnit = TextUnit.Unspecified,",
+            "lineHeight: TextUnit = TextUnit.Unspecified,",
+            "textDecoration: TextDecoration? = null,",
+            "textAlign: TextAlign? = null,"
+        ),
+        demo = { navController, name -> TextComposable(navController, name) }
+    )
+
+    private fun createScaffold() = ComposableItem(
+        name = "Scaffold",
+        description = "A top-level layout structure that implements Material Design app patterns. Provides slots for common screen elements like app bars, navigation rails, and floating action buttons.",
+        category = CATEGORY_BASIC_COMP_LAYOUTS,
+        commonUse = "Main app screens with persistent navigation elements, coordinating layout between multiple screen components, implementing Material 3 design system apps.",
+        properties = listOf(
+            "modifier: Modifier = Modifier,",
+            "topBar: @Composable (() -> Unit) = {},",
+            "bottomBar: @Composable (() -> Unit) = {},",
+            "snackbarHost: @Composable (() -> Unit) = {},",
+            "floatingActionButton: @Composable (() -> Unit) = {},",
+            "floatingActionButtonPosition: FabPosition = FabPosition.End,",
+            "containerColor: Color = MaterialTheme.colorScheme. background,"
+        ),
+        demo = { navController, name -> ScaffoldContainer(navController, name) }
     )
 
     private fun createTextField() = ComposableItem(
@@ -493,6 +826,39 @@ object DataProvider {
         demo = { navController, name -> Clip(navController, name) }
     )
 
+    private fun createGraphisLayer() = ComposableItem(
+        name = "GraphicsLayer",
+        description = "A modifier that applies hardware-accelerated transformations and effects to composables. Enables complex visual manipulations without affecting layout measurements.",
+        category = CATEGORY_ANIMATION,
+        commonUse = "Creating 3D flip animations, implementing parallax scroll effects, building custom transition animations between states.",
+        properties = listOf(
+            "rotationZ: Float",
+            "scaleX: Float",
+            "scaleY: Float",
+            "alpha: Float",
+            "translationX: Float",
+            "translationY: Float",
+            "transformOrigin: TransformOrigin"
+        ),
+        demo = { navController, name -> GraphicsLayerEffect(navController, name) }
+    )
+
+    private fun createPager() = ComposableItem(
+        name = "Pagers & Carousel",
+        description = "Interactive scrollable containers implementing horizontal and vertical pagination patterns with swipe gestures.",
+        category = CATEGORY_ANIMATION,
+        commonUse = "For Onboarding screens, Product/image carousels, Full-screen gallery pagers, Tabbed interface navigation and Card stack presentations",
+        properties = listOf(
+            "state: PagerState,",
+            "modifier: Modifier = Modifier,",
+            "contentPadding: PaddingValues = PaddingValues(0.dp),",
+            "pageSpacing: Dp = 0.dp,",
+            "flingBehavior: TargetedFlingBehavior = PagerDefaults.flingBehavior(state = state),",
+            "pageSize: PageSize = PageSize.Fill,"
+        ),
+        demo = { navController, name -> PagerAndCarouselAnim(navController, name) }
+    )
+
     private fun createWindowSizeClass() = ComposableItem(
         name = "WindowSizeClass",
         description = "A component that adapts the user interface based...",
@@ -518,6 +884,32 @@ object DataProvider {
             "configuration.navigation"
         ),
         demo = { navController, name -> LocalConfiguration(navController, name) }
+    )
+
+    private fun createComposePreview() = ComposableItem(
+        name = "Compose Preview",
+        description = "A development tool that enables real-time previewing of composable components without needing to deploy to a physical device or emulator.",
+        category = CATEGORY_DEV_TOOLS,
+        commonUse = "Rapid UI prototyping during development, visual testing of component states, team design reviews.",
+        properties = listOf(
+            "name: String? = null",
+            "apiLevel: Int = -1",
+            "showBackground: Boolean = false"
+        ),
+        demo = { navController, name -> ComposePreviewTool(navController, name) }
+    )
+
+    private fun createLayoutInspector() = ComposableItem(
+        name = "Layout Inspector",
+        description = "A debugging tool that visualizes the hierarchy and properties of composables in real-time. Integrates with Android Studio for detailed UI analysis and performance optimization.",
+        category = CATEGORY_DEV_TOOLS,
+        commonUse = "Diagnosing layout issues during development, analyzing rendering performance, understanding complex UI hierarchies.",
+        properties = listOf(
+            "liveMode: Boolean = false",
+            "screenshotAnalysis: Boolean = true",
+            "highlightBounds: Boolean = true"
+        ),
+        demo = { navController, name -> LayoutInspectorTool(navController, name) }
     )
 
 }

@@ -392,10 +392,10 @@ private fun SegmentedButtonContent(
                 "Rock" -> Icons.Default.MusicNote
                 "Jazz" -> Icons.Default.Brush
                 "Pop" -> Icons.Default.Star
-                "Leer" -> Icons.Default.Book
-                "Jugar" -> Icons.Default.SportsEsports
-                "Cocinar" -> Icons.Default.Kitchen
-                "Viajar" -> Icons.Default.Luggage
+                "Read" -> Icons.Default.Book
+                "Play" -> Icons.Default.SportsEsports
+                "Cook" -> Icons.Default.Kitchen
+                "Travel" -> Icons.Default.Luggage
                 else -> Icons.Default.Help
             },
             contentDescription = option,

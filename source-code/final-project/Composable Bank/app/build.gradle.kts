@@ -57,6 +57,10 @@ dependencies {
     implementation(libs.compose.animation)
     implementation(libs.compose.ui)
     implementation(libs.material3WindowSize)
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.compose.foundation)
+    implementation(libs.coil.core)
+    implementation(libs.coil.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

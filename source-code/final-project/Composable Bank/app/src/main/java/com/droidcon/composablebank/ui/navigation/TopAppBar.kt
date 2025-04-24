@@ -151,10 +151,10 @@ private fun TopAppBarActions(type: String, showMenu: Boolean = false) {
         else -> Color.White
     }
 
-    IconButton(onClick = { /* Search action */ }) {
+    IconButton(onClick = {  }) {
         Icon(Icons.Default.Search, "Search", tint = iconColor)
     }
-    IconButton(onClick = { /* Favorite action */ }) {
+    IconButton(onClick = { }) {
         Icon(Icons.Default.Favorite, "Favorite", tint = iconColor)
     }
     DropdownMenuController(showMenu, iconColor)

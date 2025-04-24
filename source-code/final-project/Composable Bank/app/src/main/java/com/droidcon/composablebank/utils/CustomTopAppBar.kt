@@ -13,13 +13,20 @@ import androidx.navigation.NavController
 fun CustomTopAppBar(
     title: String,
     navController: NavController? = null,
+    navigationIcon: @Composable (() -> Unit)? = null,
     onBackClick: () -> Unit = { navController?.navigateUp() }
 ) {
     val showBackButton = navController?.previousBackStackEntry != null
 
     TopAppBar(
         title = { AppBarTitle(title) },
-        navigationIcon = { NavigationBackButton(showBackButton, onBackClick) },
+        navigationIcon = {
+            navigationIcon?.invoke() ?: run {
+                if (showBackButton) {
+                    NavigationBackButton(onClick = onBackClick)
+                }
+            }
+        },
         colors = topAppBarColors()
     )
 }
@@ -34,17 +41,14 @@ private fun AppBarTitle(title: String) {
 
 @Composable
 private fun NavigationBackButton(
-    visible: Boolean,
     onClick: () -> Unit
 ) {
-    if (visible) {
-        IconButton(onClick = onClick) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-        }
+    IconButton(onClick = onClick) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Back",
+            tint = MaterialTheme.colorScheme.onPrimary
+        )
     }
 }
 

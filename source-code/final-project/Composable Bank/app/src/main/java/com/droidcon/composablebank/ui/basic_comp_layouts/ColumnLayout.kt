@@ -1,4 +1,4 @@
-package com.droidcon.composablebank.ui.layout
+package com.droidcon.composablebank.ui.basic_comp_layouts
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

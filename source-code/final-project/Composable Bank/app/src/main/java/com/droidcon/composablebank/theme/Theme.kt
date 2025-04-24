@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -59,9 +60,9 @@ fun ComposableBankTheme(
         SideEffect {
             val window = (view.context as? Activity)?.window
             window?.let { w ->
-                WindowCompat.getInsetsController(w, view).apply {
-                    isAppearanceLightStatusBars = !darkTheme
-                    isAppearanceLightNavigationBars = !darkTheme
+                WindowCompat.getInsetsController(w, view)?.let { controller ->
+                    controller.isAppearanceLightStatusBars = !darkTheme
+                    controller.isAppearanceLightNavigationBars = !darkTheme
                     w.statusBarColor = colorScheme.primary.toArgb()
                 }
             }
