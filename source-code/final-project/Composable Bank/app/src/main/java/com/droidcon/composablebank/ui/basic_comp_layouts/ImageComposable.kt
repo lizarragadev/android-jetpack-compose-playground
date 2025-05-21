@@ -1,7 +1,5 @@
 package com.droidcon.composablebank.ui.basic_comp_layouts
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

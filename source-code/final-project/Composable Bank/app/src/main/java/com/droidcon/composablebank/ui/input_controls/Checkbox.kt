@@ -27,11 +27,13 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.ui.graphics.Color
 import com.droidcon.composablebank.components.InteractiveSwitch
 import com.droidcon.composablebank.components.InteractiveRadioButtonGroup
 import com.droidcon.composablebank.components.InteractiveColorPicker
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.state.ToggleableState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -221,18 +223,24 @@ private fun SelectAllCheckboxExample(
     color: Color,
     enabled: Boolean
 ) {
-    val allChecked = selectedItems.all { it }
+    val allChecked = when {
+        selectedItems.all { it } -> ToggleableState.On
+        selectedItems.none { it } -> ToggleableState.Off
+        else -> ToggleableState.Indeterminate
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(0.8f),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        CheckboxWithLabel(
+        TriStateCheckboxWithLabel(
             label = "Select All",
-            checked = allChecked,
-            onCheckedChange = { checked ->
+            state = allChecked,
+            onClick = {
+                val allSelected = selectedItems.all { it }
+                val newState = !allSelected
                 selectedItems.indices.forEach { index ->
-                    selectedItems[index] = checked
+                    selectedItems[index] = newState
                 }
             },
             color = color,
@@ -264,6 +272,36 @@ private fun CheckboxWithLabel(
         Checkbox(
             checked = checked,
             onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            colors = CheckboxDefaults.colors(
+                checkedColor = color,
+                uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                checkmarkColor = MaterialTheme.colorScheme.onPrimary
+            )
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = 8.dp)
+        )
+    }
+}
+
+@Composable
+private fun TriStateCheckboxWithLabel(
+    label: String,
+    state: ToggleableState,
+    onClick: () -> Unit,
+    color: Color,
+    enabled: Boolean
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        TriStateCheckbox(
+            state = state,
+            onClick = onClick,
             enabled = enabled,
             colors = CheckboxDefaults.colors(
                 checkedColor = color,

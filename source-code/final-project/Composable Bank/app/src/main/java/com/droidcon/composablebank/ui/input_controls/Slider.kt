@@ -58,7 +58,6 @@ fun Sliders(navController: NavController, name: String) {
                 onShowValueChange = { showValue = it },
                 onColorChange = { sliderColor = it },
                 onEnabledChange = { isEnabled = it },
-                onStepsChange = { steps = it },
                 onValueChange = { sliderValue = it },
                 onRangeChange = { start, end ->
                     sliderRangeStart = start
@@ -84,7 +83,6 @@ private fun MainContent(
     onShowValueChange: (Boolean) -> Unit,
     onColorChange: (Color) -> Unit,
     onEnabledChange: (Boolean) -> Unit,
-    onStepsChange: (Int) -> Unit,
     onValueChange: (Float) -> Unit,
     onRangeChange: (Float, Float) -> Unit
 ) {

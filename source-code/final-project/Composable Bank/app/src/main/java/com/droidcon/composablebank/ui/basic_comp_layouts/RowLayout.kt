@@ -92,12 +92,10 @@ private fun MainContent(
         RowConfigPanel(
             horizontalArrangementName = horizontalArrangementName,
             verticalAlignmentName = verticalAlignmentName,
-            isScrollable = isScrollable,
             horizontalArrangements = horizontalArrangements.keys.toList(),
             verticalAlignments = verticalAlignments.keys.toList(),
             onHorizontalArrangementChange = onHorizontalArrangementChange,
             onVerticalAlignmentChange = onVerticalAlignmentChange,
-            onScrollableChange = onScrollableChange
         )
 
         DemoRow(
@@ -127,12 +125,10 @@ private fun MainContent(
 private fun RowConfigPanel(
     horizontalArrangementName: String,
     verticalAlignmentName: String,
-    isScrollable: Boolean,
     horizontalArrangements: List<String>,
     verticalAlignments: List<String>,
     onHorizontalArrangementChange: (String) -> Unit,
     onVerticalAlignmentChange: (String) -> Unit,
-    onScrollableChange: (Boolean) -> Unit
 ) {
     Column(
         modifier = Modifier

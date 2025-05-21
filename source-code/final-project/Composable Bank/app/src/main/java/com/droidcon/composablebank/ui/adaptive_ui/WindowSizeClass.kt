@@ -25,9 +25,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.TabletAndroid
+import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import com.droidcon.composablebank.utils.CustomTopAppBar

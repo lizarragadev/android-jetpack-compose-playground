@@ -1,5 +1,6 @@
 package com.droidcon.composablebank.ui.adaptive_ui
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
@@ -76,8 +77,7 @@ private fun rememberConfigurationState(
                 Configuration.ORIENTATION_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
-        },
-        configuration = configuration
+        }
     )
 }
 
@@ -86,7 +86,6 @@ private class ConfigurationState(
     val onDarkModeChange: (Boolean) -> Unit,
     var orientation: Int,
     val onOrientationChange: (Int) -> Unit,
-    val configuration: Configuration
 )
 
 @Composable
@@ -172,6 +171,7 @@ private fun OrientationLayout(orientation: Int) {
     }
 }
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 private fun ConfigurationDetails(configuration: Configuration, state: ConfigurationState) {
     val screenWidth = configuration.screenWidthDp.dp

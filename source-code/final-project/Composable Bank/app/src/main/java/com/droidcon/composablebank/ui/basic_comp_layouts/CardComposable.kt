@@ -164,7 +164,6 @@ private fun ElevatedCardExample(
 ) {
     CardWrapper(
         cardColor = cardColor,
-        elevation = elevation,
         swipeEnabled = swipeEnabled,
         cardType = { modifier, colors ->
             ElevatedCard(
@@ -188,7 +187,6 @@ private fun FilledCardExample(
 ) {
     CardWrapper(
         cardColor = cardColor,
-        elevation = 0.dp,
         swipeEnabled = swipeEnabled,
         cardType = { modifier, colors ->
             Card(
@@ -219,7 +217,6 @@ private fun OutlinedCardExample(
 ) {
     CardWrapper(
         cardColor = cardColor,
-        elevation = 0.dp,
         swipeEnabled = swipeEnabled,
         cardType = { modifier, colors ->
             OutlinedCard(
@@ -296,7 +293,6 @@ private fun CardGridExample(
 @Composable
 private fun CardWrapper(
     cardColor: Color,
-    elevation: Dp,
     swipeEnabled: Boolean,
     cardType: @Composable (Modifier, CardColors) -> Unit
 ) {
@@ -305,7 +301,6 @@ private fun CardWrapper(
     )
     if (swipeEnabled) {
         SwipeableCard(
-            elevation = elevation,
             cardColors = cardColors,
             cardType = cardType
         )
@@ -355,7 +350,6 @@ private fun CardContent(showImage: Boolean) {
 
 @Composable
 private fun SwipeableCard(
-    elevation: Dp,
     cardColors: CardColors,
     cardType: @Composable (Modifier, CardColors) -> Unit
 ) {
